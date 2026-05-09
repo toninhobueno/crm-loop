@@ -1,0 +1,7 @@
+Aguardando conexão para iniciar a importação de mensagens:
+    Whatsapp nome: JUNIOR 5
+    Whatsapp Id: 13
+    Criação do arquivo de logs: 29/04/2026 15:49:19
+    Selecionado Data de inicio de importação: 01/03/2026 00:00:00 
+    Selecionado Data final da importação: 31/12/1969 21:00:00 
+     

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta
+      name="viewport"
+      content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no"
+    />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("preferredTheme");
+          var dark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("splash-dark", dark);
+        } catch (e) {}
+      })();
+    </script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Alinhado ao tema do app (App.js: fancyBackground claro #fafafa / escuro #333) */
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        opacity: 1;
+        transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        background: linear-gradient(
+          165deg,
+          #fafafa 0%,
+          #f5f5f5 52%,
+          #eeeeee 100%
+        );
+      }
+
+      html.splash-dark #splash-screen {
+        background: linear-gradient(165deg, #3a3a3a 0%, #333333 48%, #2b2b2b 100%);
+      }
+
+      .splash-aurora {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        /* Brilho mínimo, neutro (sem manchas azuis) */
+        background: radial-gradient(
+          ellipse 90% 70% at 50% 20%,
+          rgba(255, 255, 255, 0.45) 0%,
+          transparent 55%
+        );
+        opacity: 0.55;
+      }
+
+      html.splash-dark .splash-aurora {
+        background: radial-gradient(
+          ellipse 90% 70% at 50% 15%,
+          rgba(255, 255, 255, 0.04) 0%,
+          transparent 50%
+        );
+        opacity: 1;
+      }
+
+      .splash-grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+            rgba(0, 0, 0, 0.028) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(0, 0, 0, 0.028) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, black 22%, transparent 78%);
+        pointer-events: none;
+        opacity: 0.85;
+      }
+
+      html.splash-dark .splash-grid {
+        background-image: linear-gradient(
+            rgba(255, 255, 255, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      }
+
+      #splash-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #splash-content {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        max-width: min(380px, 100%);
+        animation: splash-enter 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @keyframes splash-enter {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .splash-card {
+        width: 100%;
+        padding: 36px 32px 32px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 20px 56px rgba(0, 0, 0, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      html.splash-dark .splash-card {
+        background: rgba(45, 45, 45, 0.96);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        box-shadow: 0 22px 56px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+
+      .splash-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 28px;
+        color: #1a1a1a;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      html.splash-dark .splash-brand {
+        color: rgba(250, 250, 250, 0.96);
+      }
+
+      /* Ponto de marca: cor primária padrão do CRM (#065183) quando ainda não há tema no storage */
+      .splash-brand-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0a6ba8, #065183);
+        box-shadow: 0 0 0 3px rgba(6, 81, 131, 0.12);
+      }
+
+      html.splash-dark .splash-brand-dot {
+        box-shadow: 0 0 0 3px rgba(6, 81, 131, 0.25),
+          0 0 16px rgba(6, 81, 131, 0.35);
+      }
+
+      .circular-progress {
+        position: relative;
+        width: 196px;
+        height: 196px;
+        margin: 0 auto;
+      }
+
+      .progress-glow {
+        position: absolute;
+        inset: 10%;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 50% 38%,
+          rgba(6, 81, 131, 0.12) 0%,
+          transparent 65%
+        );
+        pointer-events: none;
+      }
+
+      html.splash-dark .progress-glow {
+        background: radial-gradient(
+          circle at 50% 38%,
+          rgba(80, 160, 220, 0.15) 0%,
+          transparent 65%
+        );
+      }
+
+      .progress-ring {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+        filter: drop-shadow(0 3px 14px rgba(6, 81, 131, 0.2));
+      }
+
+      html.splash-dark .progress-ring {
+        filter: drop-shadow(0 3px 18px rgba(6, 81, 131, 0.35));
+      }
+
+      .progress-ring-circle {
+        fill: none;
+        stroke-linecap: round;
+      }
+
+      .progress-ring-bg {
+        stroke-width: 9;
+        stroke: rgba(0, 0, 0, 0.08);
+      }
+
+      html.splash-dark .progress-ring-bg {
+        stroke: rgba(255, 255, 255, 0.11);
+      }
+
+      .progress-ring-fill {
+        stroke-width: 9;
+        stroke: url(#progressGradient);
+        stroke-dasharray: 565.48;
+        stroke-dashoffset: 565.48;
+        transition: stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .progress-inner {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+      }
+
+      .progress-percent {
+        font-size: 42px;
+        font-weight: 700;
+        color: #141414;
+        line-height: 1;
+        letter-spacing: -0.06em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      html.splash-dark .progress-percent {
+        color: #fafafa;
+      }
+
+      .progress-label {
+        margin-top: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #363636;
+        letter-spacing: -0.02em;
+        min-height: 22px;
+        transition: opacity 0.25s ease;
+      }
+
+      html.splash-dark .progress-label {
+        color: rgba(245, 245, 245, 0.96);
+      }
+
+      .progress-hint {
+        margin-top: 6px;
+        font-size: 13px;
+        font-weight: 400;
+        color: rgba(80, 80, 80, 0.92);
+        line-height: 1.45;
+        min-height: 38px;
+        max-width: 240px;
+      }
+
+      html.splash-dark .progress-hint {
+        color: rgba(180, 180, 180, 0.92);
+      }
+
+      .splash-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding: 0 4px;
+      }
+
+      .splash-step {
+        flex: 1;
+        max-width: 40px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.07);
+        transition: background 0.35s ease, transform 0.35s ease,
+          box-shadow 0.35s ease;
+      }
+
+      html.splash-dark .splash-step {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .splash-step.done {
+        background: linear-gradient(90deg, #0a5f96, #065183);
+        box-shadow: 0 2px 10px rgba(6, 81, 131, 0.25);
+      }
+
+      .splash-step.active:not(.done) {
+        background: rgba(6, 81, 131, 0.45);
+        box-shadow: 0 0 0 1px rgba(6, 81, 131, 0.2);
+        transform: scaleY(1.35);
+      }
+
+      .loading-text {
+        margin-top: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(90, 90, 90, 0.92);
+        letter-spacing: 0.02em;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+      }
+
+      html.splash-dark .loading-text {
+        color: rgba(170, 170, 170, 0.92);
+      }
+
+      .loading-text .dots {
+        display: inline-block;
+        animation: loading-dots-breathe 1.15s ease-in-out infinite;
+      }
+
+      @keyframes loading-dots-breathe {
+        0%,
+        100% {
+          opacity: 0.35;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .loading-text.ready {
+        color: rgba(22, 110, 72, 0.95);
+      }
+
+      html.splash-dark .loading-text.ready {
+        color: rgba(110, 231, 173, 0.95);
+      }
+
+      .loading-text.ready .dots {
+        display: none;
+      }
+
+      @media (max-width: 480px) {
+        .splash-card {
+          padding: 28px 22px 26px;
+        }
+
+        .circular-progress {
+          width: 168px;
+          height: 168px;
+        }
+
+        .progress-percent {
+          font-size: 36px;
+        }
+
+        .progress-label {
+          font-size: 14px;
+        }
+
+        .progress-hint {
+          font-size: 12px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #splash-content {
+          animation: none;
+        }
+        .loading-text .dots {
+          animation: none;
+        }
+      }
+    </style>
+
+    <script>
+      if (!crossOriginIsolated) SharedArrayBuffer = ArrayBuffer;
+    </script>
+  </head>
+
+  <body>
+    <div id="splash-screen">
+      <div class="splash-aurora" aria-hidden="true"></div>
+      <div class="splash-grid" aria-hidden="true"></div>
+
+      <svg width="0" height="0" style="position: absolute">
+        <defs>
+          <!-- Mesma família da cor primária padrão do CRM (#065183) -->
+          <linearGradient
+            id="progressGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" style="stop-color: #0a6ba8; stop-opacity: 1" />
+            <stop offset="50%" style="stop-color: #065183; stop-opacity: 1" />
+            <stop offset="100%" style="stop-color: #054670; stop-opacity: 1" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div id="splash-content">
+        <div class="splash-card">
+          <div class="splash-brand">
+            <span class="splash-brand-dot"></span>
+            <span>CRM Loop</span>
+          </div>
+
+          <div class="circular-progress">
+            <div class="progress-glow"></div>
+            <svg class="progress-ring" viewBox="0 0 200 200">
+              <circle
+                class="progress-ring-circle progress-ring-bg"
+                cx="100"
+                cy="100"
+                r="90"
+              ></circle>
+              <circle
+                class="progress-ring-circle progress-ring-fill"
+                id="progress-circle"
+                cx="100"
+                cy="100"
+                r="90"
+              ></circle>
+            </svg>
+            <div class="progress-inner">
+              <div class="progress-percent" id="progress-percent">0%</div>
+              <div class="progress-label" id="progress-label">Iniciando</div>
+              <div class="progress-hint" id="progress-hint">
+                Preparando a interface para você.
+              </div>
+            </div>
+          </div>
+
+          <div class="splash-steps" id="splash-steps" aria-label="Etapa de carregamento">
+            <span class="splash-step" data-step="0"></span>
+            <span class="splash-step" data-step="1"></span>
+            <span class="splash-step" data-step="2"></span>
+            <span class="splash-step" data-step="3"></span>
+            <span class="splash-step" data-step="4"></span>
+            <span class="splash-step" data-step="5"></span>
+          </div>
+        </div>
+
+        <div class="loading-text" id="loading-text-wrap">
+          <span id="loading-text">Carregando</span><span class="dots">…</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="root"></div>
+    <noscript>Você precisa habilitar JavaScript para executar este aplicativo.</noscript>
+
+    <script>
+      (function () {
+        var progress = 0;
+        var progressCircle = document.getElementById("progress-circle");
+        var progressPercent = document.getElementById("progress-percent");
+        var progressLabel = document.getElementById("progress-label");
+        var progressHint = document.getElementById("progress-hint");
+        var loadingWrap = document.getElementById("loading-text-wrap");
+        var loadingText = document.getElementById("loading-text");
+
+        var circumference = 2 * Math.PI * 90;
+
+        var phases = [
+          { title: "Iniciando", hint: "Reservando recursos locais na memória." },
+          { title: "Carregando", hint: "Baixando o pacote principal do aplicativo." },
+          {
+            title: "Configurando",
+            hint: "Ajustando tema, idioma e preferências.",
+          },
+          { title: "Conectando", hint: "Inicializando serviços e sessão segura." },
+          { title: "Preparando", hint: "Montando menus, rotas e contexto." },
+          { title: "Finalizando", hint: "Quase lá — liberando sua área de trabalho." },
+        ];
+
+        progressCircle.style.strokeDasharray = String(circumference);
+        progressCircle.style.strokeDashoffset = String(circumference);
+
+        var steps = document.querySelectorAll(".splash-step");
+
+        function syncSteps(pct) {
+          var segment = Math.min(
+            phases.length - 1,
+            Math.floor((pct / 100) * phases.length)
+          );
+          steps.forEach(function (el, i) {
+            el.classList.toggle("done", i < segment);
+            el.classList.toggle("active", i === segment);
+          });
+        }
+
+        function updateProgress() {
+          if (progress < 28) {
+            progress += Math.random() * 3.2 + 1.8;
+          } else if (progress < 55) {
+            progress += Math.random() * 2.6 + 1.2;
+          } else if (progress < 82) {
+            progress += Math.random() * 2.1 + 0.9;
+          } else if (progress < 95) {
+            progress += (95 - progress) / 7;
+          }
+
+          var currentProgress = Math.min(progress, 100);
+          var offset =
+            circumference - (currentProgress / 100) * circumference;
+          progressCircle.style.strokeDashoffset = String(offset);
+
+          var pct = Math.floor(currentProgress);
+          progressPercent.textContent = pct + "%";
+
+          var idx = Math.min(
+            phases.length - 1,
+            Math.floor((pct / 100) * phases.length)
+          );
+          progressLabel.textContent = phases[idx].title;
+          progressHint.textContent = phases[idx].hint;
+          syncSteps(currentProgress);
+
+          if (currentProgress >= 100) {
+            progressLabel.textContent = "Pronto";
+            progressHint.textContent = "Aplicação carregada com sucesso.";
+            loadingWrap.classList.add("ready");
+            loadingText.textContent = "Concluído";
+
+            steps.forEach(function (el) {
+              el.classList.add("done");
+              el.classList.remove("active");
+            });
+
+            setTimeout(function () {
+              var splashScreen = document.getElementById("splash-screen");
+              if (!splashScreen) return;
+              splashScreen.classList.add("fade-out");
+              setTimeout(function () {
+                splashScreen.remove();
+              }, 550);
+            }, 780);
+          }
+        }
+
+        var interval = setInterval(function () {
+          updateProgress();
+          if (progress >= 100) {
+            clearInterval(interval);
+          }
+        }, 100);
+
+        window.finishProgress = function () {
+          progress = 100;
+          updateProgress();
+        };
+
+        window.addEventListener("load", function () {
+          setTimeout(function () {
+            if (progress < 82) {
+              progress = 82;
+            }
+          }, 520);
+        });
+
+        /* Fallback segurança: finaliza mesmo se algo travar o bundle */
+        setTimeout(function () {
+          if (document.getElementById("splash-screen")) {
+            window.finishProgress();
+          }
+        }, 12000);
+      })();
+    </script>
+  </body>
+</html>

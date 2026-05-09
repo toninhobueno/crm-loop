@@ -1,0 +1,18 @@
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+crm-loop-frontend/node_modules/
+
+# TypeScript / build
+dist/
+
+# Tooling / IDE (não versionar)
+.cursor/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store

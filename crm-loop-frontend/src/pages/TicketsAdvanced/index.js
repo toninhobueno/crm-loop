@@ -1,0 +1,125 @@
+import React, { useState, useEffect, useContext } from "react";
+import { useParams } from "react-router-dom";
+import { makeStyles } from "@material-ui/core/styles";
+import Button from '@material-ui/core/Button';
+import Box from '@material-ui/core/Box';
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import QuestionAnswerIcon from '@material-ui/icons/QuestionAnswer';
+import ChatIcon from '@material-ui/icons/Chat';
+
+import TicketsManagerTabs from "../../components/TicketsManagerTabs/";
+import Ticket from "../../components/Ticket/";
+import TicketAdvancedLayout from "../../components/TicketAdvancedLayout";
+
+import { TicketsContext } from "../../context/Tickets/TicketsContext";
+
+import { i18n } from "../../translate/i18n";
+import { QueueSelectedProvider } from "../../context/QueuesSelected/QueuesSelectedContext";
+
+const useStyles = makeStyles(theme => ({
+    header: {
+        '& .MuiBottomNavigation-root': {
+            height: 48,
+            minHeight: 48,
+        },
+        '& .MuiBottomNavigationAction-root': {
+            minWidth: 60,
+            padding: '4px 8px',
+            fontSize: '0.7rem',
+        },
+        '& .MuiBottomNavigationAction-label': {
+            fontSize: '0.7rem',
+            '&.Mui-selected': {
+                fontSize: '0.75rem',
+            },
+        },
+        '& .MuiSvgIcon-root': {
+            fontSize: '1.2rem',
+        },
+    },
+    content: {
+        overflow: "auto"
+    },
+    placeholderContainer: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        background: theme.palette.tabHeaderBackground,
+    },
+    placeholderItem: {
+    }
+}));
+
+const TicketAdvanced = () => {
+    const classes = useStyles();
+    const { ticketId } = useParams();
+    const [option, setOption] = useState(0);
+    const { currentTicket, setCurrentTicket } = useContext(TicketsContext)
+
+    useEffect(() => {
+        if (currentTicket.id !== null) {
+            setCurrentTicket({ id: currentTicket.id, code: '#open' })
+        }
+        if (!ticketId) {
+            setOption(1)
+        }
+        return () => {
+            setCurrentTicket({ id: null, code: null })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        if (currentTicket.id !== null) {
+            setOption(0)
+        }
+    }, [currentTicket])
+
+    const renderPlaceholder = () => {
+        return <Box className={classes.placeholderContainer}>
+            <div className={classes.placeholderItem}>{i18n.t("chat.noTicketMessage")}</div><br />
+            <Button onClick={() => setOption(1)} variant="contained" color="primary">
+                Selecionar Ticket
+            </Button>
+        </Box>
+    }
+
+    const renderMessageContext = () => {
+        if (ticketId && ticketId !== "undefined") {
+            return <Ticket />
+        }
+        return renderPlaceholder()
+    }
+
+    const renderTicketsManagerTabs = () => {
+        return <TicketsManagerTabs />
+    }
+
+    return (
+        <QueueSelectedProvider>
+            <TicketAdvancedLayout>
+                <Box className={classes.header}>
+                    <BottomNavigation
+                        value={option}
+                        onChange={(event, newValue) => {
+                            setOption(newValue);
+                        }}
+                        showLabels
+                        className={classes.root}
+                    >
+                        <BottomNavigationAction label="Ticket" icon={<ChatIcon />} />
+                        <BottomNavigationAction label="Atendimentos" icon={<QuestionAnswerIcon />} />
+                    </BottomNavigation>
+                </Box>
+                <Box className={classes.content}>
+                    {option === 0 ? renderMessageContext() : renderTicketsManagerTabs()}
+                </Box>
+            </TicketAdvancedLayout>
+        </QueueSelectedProvider>
+    );
+};
+
+export default TicketAdvanced;

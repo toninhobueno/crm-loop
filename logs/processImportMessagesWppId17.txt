@@ -1,0 +1,646 @@
+Aguardando conexão para iniciar a importação de mensagens:
+    Whatsapp nome: junior12
+    Whatsapp Id: 17
+    Criação do arquivo de logs: 29/04/2026 17:27:00
+    Selecionado Data de inicio de importação: 22/04/2026 17:24:00 
+    Selecionado Data final da importação: 29/04/2026 17:23:00 
+     
+
+Mensagem 1 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AEC682AC4F2CA2D3141"
+  },
+  "message": {
+    "conversation": "Oi",
+    "messageContextInfo": {
+      "messageSecret": "rQHkkwX4o/AuMQATAXvYXe2dVKLHa04emgaN8Dh04ME="
+    }
+  },
+  "messageTimestamp": "1777493987",
+  "messageSecret": "rQHkkwX4o/AuMQATAXvYXe2dVKLHa04emgaN8Dh04ME=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARJYd59WPS/H/Ml3TXM36nc6w5k="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 2 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB03B0E9B2B49E9B171F7"
+  },
+  "message": {
+    "conversation": "*Admin:*\nOi"
+  },
+  "messageTimestamp": "1777493958",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777493962",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 3 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A74C69E5C10581D4457"
+  },
+  "message": {
+    "stickerMessage": {
+      "url": "https://mmg.whatsapp.net/v/t62.15575-24/606431972_806798225490883_8498988469702607436_n.enc?ccb=11-4&oh=01_Q5Aa4QGsh7E2ECkzKwWxNsDo-Mr5DOyHlTWcKP02fc-ltj8PfQ&oe=6A19E35C&_nc_sid=5e03e0&mms3=true",
+      "fileSha256": "KJp/Rr6v1vcIJj17AM6Be08bgTmckHtHF8Xj4P5sTlM=",
+      "fileEncSha256": "ku6ASlxYqYHyb+RNhUb2vgJslF+0iKGB6s1fcVjPijA=",
+      "mediaKey": "7LloTz8I0BxL8dJaCgPfGOrsfUV7tRhe9YKk9smLV1M=",
+      "mimetype": "image/webp",
+      "directPath": "/v/t62.15575-24/606431972_806798225490883_8498988469702607436_n.enc?ccb=11-4&oh=01_Q5Aa4QGsh7E2ECkzKwWxNsDo-Mr5DOyHlTWcKP02fc-ltj8PfQ&oe=6A19E35C&_nc_sid=5e03e0",
+      "fileLength": "316492",
+      "mediaKeyTimestamp": "1777493426",
+      "firstFrameLength": 8028,
+      "firstFrameSidecar": "V1SBn+y4rbG5KA==",
+      "isAnimated": true,
+      "stickerSentTs": "1777493575617",
+      "isAvatar": false,
+      "isAiSticker": false,
+      "isLottie": false,
+      "accessibilityLabel": ""
+    },
+    "messageContextInfo": {
+      "messageSecret": "1796Q6jfsunQs+eeBxdpJyVwcneQFA3o697gt3agvMk="
+    }
+  },
+  "messageTimestamp": "1777493576",
+  "userReceipt": [
+    {
+      "userJid": "23202017341545@lid",
+      "receiptTimestamp": "1777493955",
+      "readTimestamp": "1777493955",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "23202017341545:33@lid"
+      ]
+    }
+  ],
+  "messageSecret": "1796Q6jfsunQs+eeBxdpJyVwcneQFA3o697gt3agvMk=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARLWMfdonojP3RDulKtLPdpdWR8="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 4 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3ADA67327EF3DACDAC36"
+  },
+  "message": {
+    "stickerMessage": {
+      "url": "https://mmg.whatsapp.net/v/t62.15575-24/598979283_1504038031060735_294328267913485678_n.enc?ccb=11-4&oh=01_Q5Aa4QHVZaoXjkBaHU-YHaFvnuAt76tYSDIXpIwFQyb_j-5pBw&oe=6A19D5A4&_nc_sid=5e03e0&mms3=true",
+      "fileSha256": "WYC722wWuJHBpnQitr5wDW7uWTeVZDuGv4Wdt51Yzm4=",
+      "fileEncSha256": "5UWrQO6zDh+kxDmtF/lXPBV5B53oJZBZ/wg/+oAhYWE=",
+      "mediaKey": "x4et+u80Vi1VcDBGz7X16PozZyMFbesOCYBIb05PlsE=",
+      "mimetype": "image/webp",
+      "directPath": "/v/t62.15575-24/598979283_1504038031060735_294328267913485678_n.enc?ccb=11-4&oh=01_Q5Aa4QHVZaoXjkBaHU-YHaFvnuAt76tYSDIXpIwFQyb_j-5pBw&oe=6A19D5A4&_nc_sid=5e03e0",
+      "fileLength": "83246",
+      "mediaKeyTimestamp": "1777472253",
+      "isAnimated": false,
+      "stickerSentTs": "1777493571432",
+      "isAvatar": false,
+      "isAiSticker": false,
+      "isLottie": false,
+      "accessibilityLabel": ""
+    },
+    "messageContextInfo": {
+      "messageSecret": "WRxdAg4WayZEe+/CR14a47uZzahFhiSzu7Hcu1Smacg="
+    }
+  },
+  "messageTimestamp": "1777493572",
+  "userReceipt": [
+    {
+      "userJid": "23202017341545@lid",
+      "receiptTimestamp": "1777493955",
+      "readTimestamp": "1777493955",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "23202017341545:33@lid"
+      ]
+    }
+  ],
+  "messageSecret": "WRxdAg4WayZEe+/CR14a47uZzahFhiSzu7Hcu1Smacg=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARJgF5Dg4mi6DpBhqQhL4mb5bb8="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 5 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB0217C4220F3E7A1921E"
+  },
+  "message": {
+    "conversation": "*Admin:*\nE ae"
+  },
+  "messageTimestamp": "1777493564",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777493565",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 6 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB0EDE67B2004D84A88F9"
+  },
+  "message": {
+    "conversation": "*Admin:*\nOpa blz"
+  },
+  "messageTimestamp": "1777493561",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777493561",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 7 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A8BB2A39B3198B827F3"
+  },
+  "message": {
+    "conversation": "Tudo bem",
+    "messageContextInfo": {
+      "messageSecret": "MepW1OO708+TTY+f2u6ndwlY4XJg6be3bvtSyY0a+eU="
+    }
+  },
+  "messageTimestamp": "1777493553",
+  "userReceipt": [
+    {
+      "userJid": "23202017341545@lid",
+      "receiptTimestamp": "1777493560",
+      "readTimestamp": "1777493560",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "23202017341545:33@lid"
+      ]
+    }
+  ],
+  "messageSecret": "MepW1OO708+TTY+f2u6ndwlY4XJg6be3bvtSyY0a+eU=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARJxkfSTIttv86M9OIjIWE9aN1o="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 8 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A93F36CECF6A148865E"
+  },
+  "message": {
+    "conversation": "Oi",
+    "messageContextInfo": {
+      "messageSecret": "ZyBi7z3/pJpMkMagzGumDK6qhzgOBLWBGDc0YkOQA2k="
+    }
+  },
+  "messageTimestamp": "1777493537",
+  "userReceipt": [
+    {
+      "userJid": "23202017341545@lid",
+      "receiptTimestamp": "1777493544",
+      "readTimestamp": "1777493544",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "23202017341545:33@lid"
+      ]
+    }
+  ],
+  "messageSecret": "ZyBi7z3/pJpMkMagzGumDK6qhzgOBLWBGDc0YkOQA2k=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARKckgOvRMbDB6leRfkH2nk8QxM="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 9 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "179491666161672@lid",
+    "fromMe": true,
+    "id": "3EB0DF0FD6B4D0D35AD907"
+  },
+  "message": {
+    "conversation": "‎ "
+  },
+  "messageTimestamp": "1777492679",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "179491666161672@lid",
+      "receiptTimestamp": "1777492679",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "179491666161672:8@lid",
+        "179491666161672:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 10 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB02290E69EF5636F3C30"
+  },
+  "message": {
+    "conversation": "Estou de férias no momento "
+  },
+  "messageTimestamp": "1777492431",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777492432",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 11 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A0BE61A7C5E83129D89"
+  },
+  "message": {
+    "conversation": "Oi",
+    "messageContextInfo": {
+      "messageSecret": "SyNGJTPWUhCV+TZ126zUmDwVVf2aXIcIb8e4Hw11fDw="
+    }
+  },
+  "messageTimestamp": "1777492429",
+  "messageSecret": "SyNGJTPWUhCV+TZ126zUmDwVVf2aXIcIb8e4Hw11fDw=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARKzMDZ704DetLZlOgjOqoQZhug="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 12 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB0C695C7A64DC8D98B15"
+  },
+  "message": {
+    "conversation": "Estou de férias no momento "
+  },
+  "messageTimestamp": "1777492339",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777492339",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 13 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3AB4FEBED936CAD8F2F3"
+  },
+  "message": {
+    "conversation": "Oi",
+    "messageContextInfo": {
+      "messageSecret": "swa4j3p548IG3Vz1OepX0xUDCrzy6big6DNNitZzHog="
+    }
+  },
+  "messageTimestamp": "1777492335",
+  "messageSecret": "swa4j3p548IG3Vz1OepX0xUDCrzy6big6DNNitZzHog=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARIUUlaRmEaVzhw2jAB0aXY1bWE="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 14 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "3EB0ACD8BD45CEEC2DA2FD"
+  },
+  "message": {
+    "conversation": "Estou de férias no momento "
+  },
+  "messageTimestamp": "1777492238",
+  "status": "DELIVERY_ACK",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777492238",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:0@lid"
+      ]
+    }
+  ],
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 15 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": false,
+    "id": "3A220BDA78E5CD6E2FCE"
+  },
+  "message": {
+    "stickerMessage": {
+      "url": "https://mmg.whatsapp.net/v/t62.15575-24/598979283_1504038031060735_294328267913485678_n.enc?ccb=11-4&oh=01_Q5Aa4QHVZaoXjkBaHU-YHaFvnuAt76tYSDIXpIwFQyb_j-5pBw&oe=6A19D5A4&_nc_sid=5e03e0&mms3=true",
+      "fileSha256": "WYC722wWuJHBpnQitr5wDW7uWTeVZDuGv4Wdt51Yzm4=",
+      "fileEncSha256": "5UWrQO6zDh+kxDmtF/lXPBV5B53oJZBZ/wg/+oAhYWE=",
+      "mediaKey": "x4et+u80Vi1VcDBGz7X16PozZyMFbesOCYBIb05PlsE=",
+      "mimetype": "image/webp",
+      "directPath": "/v/t62.15575-24/598979283_1504038031060735_294328267913485678_n.enc?ccb=11-4&oh=01_Q5Aa4QHVZaoXjkBaHU-YHaFvnuAt76tYSDIXpIwFQyb_j-5pBw&oe=6A19D5A4&_nc_sid=5e03e0",
+      "fileLength": "83246",
+      "mediaKeyTimestamp": "1777472253",
+      "isAnimated": false,
+      "stickerSentTs": "1777492235838",
+      "isAvatar": false,
+      "isAiSticker": false,
+      "isLottie": false,
+      "accessibilityLabel": ""
+    },
+    "messageContextInfo": {
+      "messageSecret": "QDB1DIOXa2P8iihcrvP1BrU7KVTsWD5LLbFUtclHkqM="
+    }
+  },
+  "messageTimestamp": "1777492236",
+  "messageSecret": "QDB1DIOXa2P8iihcrvP1BrU7KVTsWD5LLbFUtclHkqM=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARLP23T5godlgwT5vxthTHu9EzI="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 16 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "554195455634@s.whatsapp.net",
+    "fromMe": true,
+    "id": "2A1DA740882794DF5357"
+  },
+  "message": {
+    "conversation": "Oi",
+    "messageContextInfo": {
+      "messageSecret": "mcqlq3x7/QnKo3BLYpPK1IaqGNEr47GQdYRscDlFRIs="
+    }
+  },
+  "messageTimestamp": "1777488100",
+  "status": "DELIVERY_ACK",
+  "messageC2STimestamp": "1777488101",
+  "userReceipt": [
+    {
+      "userJid": "48700785188885@lid",
+      "receiptTimestamp": "1777488102",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "48700785188885:93@lid",
+        "48700785188885:95@lid",
+        "48700785188885:0@lid"
+      ]
+    },
+    {
+      "userJid": "23202017341545@lid",
+      "receiptTimestamp": "0",
+      "readTimestamp": "0",
+      "playedTimestamp": "0"
+    }
+  ],
+  "messageSecret": "mcqlq3x7/QnKo3BLYpPK1IaqGNEr47GQdYRscDlFRIs=",
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 17 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "245805424357451@lid",
+    "fromMe": true,
+    "id": "2A14D4B0FCCA99A027BA"
+  },
+  "message": {
+    "conversation": "Seguinte, sou de Curitiba e estamos criando uma plataforma para atração de clientes que desejam tirar a habilitação, com isso poderíamos trazer novos clientes a instrutores, nesse link você consegue se cadastrar de forma gratuita https://www.guiadrive.com.br/dar-aulas",
+    "messageContextInfo": {
+      "messageSecret": "3cGIriR/53jB4vIl83qoyC86kXUrih+aOlvd2uxOLIM="
+    }
+  },
+  "messageTimestamp": "1776952637",
+  "status": "DELIVERY_ACK",
+  "messageC2STimestamp": "1776952638",
+  "userReceipt": [
+    {
+      "userJid": "245805424357451@lid",
+      "receiptTimestamp": "1776964611",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "245805424357451:0@lid"
+      ]
+    }
+  ],
+  "messageSecret": "3cGIriR/53jB4vIl83qoyC86kXUrih+aOlvd2uxOLIM=",
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 18 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "245805424357451@lid",
+    "fromMe": false,
+    "id": "ACA481B67516191B7B1D238F816F5B6F"
+  },
+  "message": {
+    "conversation": "Como posso ajudar?",
+    "messageContextInfo": {
+      "messageSecret": "y25ZZCIL+GYYyt4jg9IgaUiUuUjtcR4gxdoGMBLqfW8="
+    }
+  },
+  "messageTimestamp": "1776952103",
+  "messageSecret": "y25ZZCIL+GYYyt4jg9IgaUiUuUjtcR4gxdoGMBLqfW8=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARL2A7rfyo5FeA0PlqzLQHYoaus="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 19 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "245805424357451@lid",
+    "fromMe": false,
+    "id": "AC843B70C23E0C62A7DD9C1216057C17"
+  },
+  "message": {
+    "conversation": "Bom dia Junior, tudo bom?",
+    "messageContextInfo": {
+      "messageSecret": "sJDiAWP+Y6PPr1AVmcdSwwGuEPcWrLq19i/vYqvXPpA="
+    }
+  },
+  "messageTimestamp": "1776952077",
+  "messageSecret": "sJDiAWP+Y6PPr1AVmcdSwwGuEPcWrLq19i/vYqvXPpA=",
+  "reportingTokenInfo": {
+    "reportingTag": "ARJlrNA9lKQnRM0tYyCeIGX+ik8="
+  }
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 20 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "277880173006889@lid",
+    "fromMe": true,
+    "id": "2A29B9FAF1B287E2448F"
+  },
+  "message": {
+    "extendedTextMessage": {
+      "text": "Seguinte, sou de Curitiba e estamos criando uma plataforma para atração de clientes que desejam tirar a habilitação, com isso poderíamos trazer novos clientes a instrutores, nesse link você consegue se cadastrar de forma gratuita https://www.guiadrive.com.br/dar-aulas",
+      "matchedText": "https://www.guiadrive.com.br/dar-aulas",
+      "description": "A Resolução 1.020/2025 abriu o mercado para instrutores autônomos. Cadastre-se grátis, defina seus preços e comece a receber alunos na sua região.",
+      "title": "Seja Instrutor Autônomo no Guia Drive | Ganhe Mais, Trabalhe Quando Quiser",
+      "font": "SYSTEM",
+      "previewType": "NONE",
+      "inviteLinkGroupTypeV2": "DEFAULT",
+      "linkPreviewMetadata": {
+        "fbExperimentId": 0
+      }
+    },
+    "messageContextInfo": {
+      "messageSecret": "whf7nGNISH9VZj9/ZI1OvKEAS0WEVXYncqxoOZEKuV0="
+    }
+  },
+  "messageTimestamp": "1776950157",
+  "status": "DELIVERY_ACK",
+  "messageC2STimestamp": "1776950158",
+  "userReceipt": [
+    {
+      "userJid": "277880173006889@lid",
+      "receiptTimestamp": "1776950158",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "277880173006889:30@lid",
+        "277880173006889:0@lid"
+      ]
+    }
+  ],
+  "messageSecret": "whf7nGNISH9VZj9/ZI1OvKEAS0WEVXYncqxoOZEKuV0=",
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 
+
+Mensagem 21 de 21
+               
+Importando Mensagem: {
+  "key": {
+    "remoteJid": "136550079848653@lid",
+    "fromMe": true,
+    "id": "2AC72E53CA6E73023D90"
+  },
+  "message": {
+    "conversation": "Seguinte, sou de Curitiba e estamos criando uma plataforma para atração de clientes que desejam tirar a habilitação, com isso poderíamos trazer novos clientes a instrutores, nesse link você consegue se cadastrar de forma gratuita https://www.guiadrive.com.br/dar-aulas",
+    "messageContextInfo": {
+      "messageSecret": "R5dsD/zrYZ59+njcawW+Od6BTm147hGPfSgtqeP2eoM="
+    }
+  },
+  "messageTimestamp": "1776950151",
+  "status": "DELIVERY_ACK",
+  "messageC2STimestamp": "1776950152",
+  "userReceipt": [
+    {
+      "userJid": "136550079848653@lid",
+      "receiptTimestamp": "1776950239",
+      "readTimestamp": "0",
+      "playedTimestamp": "0",
+      "deliveredDeviceJid": [
+        "136550079848653:0@lid"
+      ]
+    }
+  ],
+  "messageSecret": "R5dsD/zrYZ59+njcawW+Od6BTm147hGPfSgtqeP2eoM=",
+  "originalSelfAuthorUserJidString": "23202017341545@lid"
+}>>>>>>>>>>>>>>>>>>> 

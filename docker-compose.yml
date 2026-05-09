@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:?DB_PASS must be set}
+      POSTGRES_DB: ${DB_NAME:-database}
+    volumes:
+      - crm_loop_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - crm_loop_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    image: ghcr.io/toninhobueno/crm-loop-backend:latest
+    pull_policy: always
+    ports:
+      - "${BACKEND_HOST_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_PASS: ${DB_PASS:?DB_PASS must be set}
+      REDIS_URI: redis://redis:6379
+      REDIS_URI_ACK: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/toninhobueno/crm-loop-frontend:latest
+    pull_policy: always
+    ports:
+      - "${FRONTEND_HOST_PORT:-80}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  crm_loop_pgdata:
+  crm_loop_redis:
