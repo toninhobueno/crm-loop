@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Wavoip from 'wavoip-api';
 import SoundCalling from './calling.mp3';
 import SoundRinging from './ring.mp3';
 
@@ -30,6 +29,7 @@ const WavoipPhoneWidget = ({
   const durationIntervalRef = useRef(null);
   const widgetRef = useRef(null);
   const audioRef = useRef(null);
+  const wavoipCtorRef = useRef(null);
 
   const callingSoundRef = useRef(null);
   const ringingSoundRef = useRef(null);
@@ -397,7 +397,20 @@ const WavoipPhoneWidget = ({
   // Conectar ao Wavoip
   const connectToWavoip = useCallback(async () => {
     try {
-      const WAV = new Wavoip();
+      // Evita crash em browsers/contexts sem WebRTC/mediaDevices.
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
+        const err = new Error('mediaDevices indisponível neste navegador/contexto');
+        console.warn(err.message);
+        if (onError) onError(err);
+        return;
+      }
+
+      if (!wavoipCtorRef.current) {
+        const mod = await import('wavoip-api');
+        wavoipCtorRef.current = mod.default || mod;
+      }
+
+      const WAV = new wavoipCtorRef.current();
       const instance = WAV.connect(token);
       wavoipInstanceRef.current = instance;
 
