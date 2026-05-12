@@ -30,7 +30,7 @@ services:
     image: ghcr.io/toninhobueno/crm-loop-backend:latest
     pull_policy: always
     ports:
-      - "${BACKEND_HOST_PORT:-8080}:8080"
+      - "${BACKEND_HOST_PORT:-8082}:8080"
     env_file:
       - .env
     environment:
