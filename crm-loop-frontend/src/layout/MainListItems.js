@@ -615,17 +615,22 @@ const MainListItems = ({ collapsed, drawerClose }) => {
 
   useEffect(() => {
     async function fetchData() {
-      const companyId = user.companyId;
-      const planConfigs = await getPlanCompany(undefined, companyId);
+      try {
+        const companyId = user.companyId;
+        const planConfigs = await getPlanCompany(undefined, companyId);
+        const plan = planConfigs?.plan ?? {};
 
-      setShowCampaigns(planConfigs.plan.useCampaigns);
-      setShowKanban(planConfigs.plan.useKanban);
-      setShowOpenAi(planConfigs.plan.useOpenAi);
-      setShowIntegrations(planConfigs.plan.useIntegrations);
-      setShowSchedules(planConfigs.plan.useSchedules);
-      setShowInternalChat(planConfigs.plan.useInternalChat);
-      setShowExternalApi(planConfigs.plan.useExternalApi);
-      setShowWavoipCall(planConfigs.plan.wavoip);
+        setShowCampaigns(Boolean(plan.useCampaigns));
+        setShowKanban(Boolean(plan.useKanban));
+        setShowOpenAi(Boolean(plan.useOpenAi));
+        setShowIntegrations(Boolean(plan.useIntegrations));
+        setShowSchedules(Boolean(plan.useSchedules));
+        setShowInternalChat(Boolean(plan.useInternalChat));
+        setShowExternalApi(Boolean(plan.useExternalApi));
+        setShowWavoipCall(Boolean(plan.wavoip));
+      } catch (error) {
+        console.error("Erro ao carregar permissões do plano:", error);
+      }
     }
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
