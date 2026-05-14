@@ -2,6 +2,7 @@ import Queue from "../models/Queue";
 import Company from "../models/Company";
 import User from "../models/User";
 import jwt from "jsonwebtoken";
+import authConfig from "../config/auth";
 
 interface SerializedUser {
   id: number;
@@ -38,11 +39,8 @@ interface SerializedUser {
 export const SerializeUser = async (user: User): Promise<SerializedUser> => {
   // Gera um token de 32 bytes
   const generateToken = (userId: number | string): string => {
-    // Gerar o token com base no userId e sua chave secreta
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-      expiresIn: "1h"
-    });
-    return token;
+    const { secret, expiresIn } = authConfig;
+    return jwt.sign({ userId }, secret, { expiresIn });
   };
 
   return {
