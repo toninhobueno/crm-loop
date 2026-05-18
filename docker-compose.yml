@@ -25,6 +25,8 @@ services:
     environment:
       TZ: America/Sao_Paulo
     command: ["redis-server", "--appendonly", "yes"]
+    environment:
+      TZ: America/Sao_Paulo
     volumes:
       - crm_loop_redis:/data
     healthcheck:
@@ -60,6 +62,8 @@ services:
     pull_policy: always
     ports:
       - "${FRONTEND_HOST_PORT:-80}:80"
+    environment:
+      TZ: America/Sao_Paulo
     depends_on:
       - backend
     restart: unless-stopped
