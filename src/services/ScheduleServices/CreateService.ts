@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import AppError from "../../errors/AppError";
 import Schedule from "../../models/Schedule";
+import { parseLocalDateTime } from "../../utils/timezone";
 
 interface Request {
   body: string;
@@ -58,7 +59,7 @@ const CreateService = async ({
   const schedule = await Schedule.create(
     {
       body,
-      sendAt,
+      sendAt: parseLocalDateTime(sendAt),
       contactId,
       companyId,
       userId,
@@ -76,7 +77,7 @@ const CreateService = async ({
       assinar,
       contadorEnvio,
       // ✅ Incluir campos de lembrete
-      reminderDate: reminderDate || null,
+      reminderDate: reminderDate ? parseLocalDateTime(reminderDate) : null,
       reminderMessage: null, // Não usar mais o campo reminderMessage
       reminderStatus: reminderDate ? 'PENDENTE' : null
     }

@@ -1,4 +1,5 @@
-import moment from "moment";
+import moment from "moment-timezone";
+import { APP_TIMEZONE, nowInAppTimezone } from "../../utils/timezone";
 import { Op } from "sequelize";
 import Campaign from "../../models/Campaign";
 import AppError from "../../errors/AppError";
@@ -15,7 +16,7 @@ class RecurrenceService {
     lastExecution: Date,
     config: RecurrenceConfig
   ): Date {
-    const lastMoment = moment(lastExecution);
+    const lastMoment = moment(lastExecution).tz(APP_TIMEZONE);
     let nextExecution: moment.Moment;
 
     switch (config.type) {
@@ -135,7 +136,10 @@ class RecurrenceService {
     }
 
     // Verificar se já tem uma próxima execução agendada (evitar duplicação)
-    if (campaign.nextScheduledAt && moment(campaign.nextScheduledAt).isAfter(moment())) {
+    if (
+      campaign.nextScheduledAt &&
+      moment(campaign.nextScheduledAt).tz(APP_TIMEZONE).isAfter(nowInAppTimezone())
+    ) {
       console.log(`[RDS-RECURRENCE] Campanha ${campaignId} já tem próxima execução agendada para ${campaign.nextScheduledAt}`);
       return;
     }
@@ -196,7 +200,7 @@ class RecurrenceService {
           status: { [Op.ne]: 'FINALIZADA' }, // Apenas atualizar se não foi finalizada
           [Op.or]: [
             { nextScheduledAt: null }, // Não tem próxima execução agendada
-            { nextScheduledAt: { [Op.lt]: moment().toDate() } } // Ou a próxima execução já passou
+            { nextScheduledAt: { [Op.lt]: nowInAppTimezone().toDate() } } // Ou a próxima execução já passou
           ]
         }
       }

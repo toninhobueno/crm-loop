@@ -36,7 +36,12 @@ import {
 import Autocomplete, {
   createFilterOptions,
 } from "@material-ui/lab/Autocomplete";
-import moment from "moment";
+import moment from "moment-timezone";
+import {
+  APP_TIMEZONE,
+  formatDateTimeForApi,
+  formatDateTimeForInput
+} from "../../utils/dateTimezone";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { isArray, capitalize } from "lodash";
 import DeleteOutline from "@material-ui/icons/DeleteOutline";
@@ -93,7 +98,7 @@ const ScheduleModal = ({
   const initialState = {
     body: message || "", // ✅ Pre-popular com mensagem se fornecida
     contactId: contactId || "", // ✅ Pre-popular com contactId se fornecido
-    sendAt: moment().add(1, "hour").format("YYYY-MM-DDTHH:mm"),
+    sendAt: moment().tz(APP_TIMEZONE).add(1, "hour").format("YYYY-MM-DDTHH:mm"),
     sentAt: "",
     openTicket: "enabled",
     ticketUserId: user.id,
@@ -367,9 +372,11 @@ const ScheduleModal = ({
             return {
               ...prevState,
               ...data,
-              sendAt: moment(data.sendAt).format("YYYY-MM-DDTHH:mm"),
+              sendAt: formatDateTimeForInput(data.sendAt),
               // ✅ Incluir campos de lembrete no carregamento
-              reminderDate: data.reminderDate ? moment(data.reminderDate).format("YYYY-MM-DDTHH:mm") : "",
+              reminderDate: data.reminderDate
+                ? formatDateTimeForInput(data.reminderDate)
+                : "",
             };
           });
 
@@ -479,6 +486,7 @@ const ScheduleModal = ({
   const handleSaveSchedule = async (values) => {
     const scheduleData = {
       ...values,
+      sendAt: formatDateTimeForApi(values.sendAt),
       userId: user.id,
       whatsappId: selectedWhatsapps,
       ticketUserId: selectedUser?.id || null,
@@ -486,7 +494,9 @@ const ScheduleModal = ({
       intervalo: intervalo || 1,
       tipoDias: tipoDias || 4,
       // ✅ Incluir dados do lembrete
-      reminderDate: values.reminderDate || null,
+      reminderDate: values.reminderDate
+        ? formatDateTimeForApi(values.reminderDate)
+        : null,
     };
 
     try {

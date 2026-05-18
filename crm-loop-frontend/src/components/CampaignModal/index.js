@@ -22,7 +22,12 @@ import RepeatIcon from '@material-ui/icons/Repeat';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import { isNil } from "lodash";
 import { i18n } from "../../translate/i18n";
-import moment from "moment";
+import moment from "moment-timezone";
+import {
+  APP_TIMEZONE,
+  formatDateTimeForApi,
+  formatDateTimeForInput
+} from "../../utils/dateTimezone";
 
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
@@ -248,7 +253,7 @@ const CampaignModal = ({
   // Função auxiliar para calcular execuções mock
   const calculateMockExecutions = (values) => {
     const executions = [];
-    let currentDate = moment(values.scheduledAt);
+    let currentDate = moment.tz(values.scheduledAt, APP_TIMEZONE);
     
     for (let i = 0; i < 5; i++) {
       executions.push(currentDate.format('DD/MM/YYYY HH:mm'));
@@ -377,9 +382,9 @@ const CampaignModal = ({
 
           Object.entries(data).forEach(([key, value]) => {
             if (key === "scheduledAt" && value !== "" && value !== null) {
-              prevCampaignData[key] = moment(value).format("YYYY-MM-DDTHH:mm");
+              prevCampaignData[key] = formatDateTimeForInput(value);
             } else if (key === "recurrenceEndDate" && value !== "" && value !== null) {
-              prevCampaignData[key] = moment(value).format("YYYY-MM-DD");
+              prevCampaignData[key] = moment(value).tz(APP_TIMEZONE).format("YYYY-MM-DD");
             } else if (key === "recurrenceDaysOfWeek" && value) {
               prevCampaignData[key] = JSON.parse(value);
             } else {
@@ -394,8 +399,8 @@ const CampaignModal = ({
   }, [campaignId, open, initialValues, companyId]);
 
   useEffect(() => {
-    const now = moment();
-    const scheduledAt = moment(campaign.scheduledAt);
+    const now = moment().tz(APP_TIMEZONE);
+    const scheduledAt = moment(campaign.scheduledAt).tz(APP_TIMEZONE);
     const moreThenAnHour =
       !Number.isNaN(scheduledAt.diff(now)) && scheduledAt.diff(now, "hour") > 1;
     const isEditable =
@@ -437,11 +442,11 @@ const handleSaveCampaign = async (values) => {
       if (key === "scheduledAt") {
         // scheduledAt é obrigatório, então sempre deve ter um valor
         if (value !== "" && value !== null && value !== undefined) {
-          dataValues[key] = moment(value).format("YYYY-MM-DD HH:mm:ss");
+          dataValues[key] = formatDateTimeForApi(value);
         }
         // Se vazio, não sobrescreve (mantém o valor original do dataValues)
       } else if (key === "recurrenceEndDate" && value !== "" && value !== null) {
-        dataValues[key] = moment(value).format("YYYY-MM-DD HH:mm:ss");
+        dataValues[key] = formatDateTimeForApi(value);
       } else if (key !== "recurrenceDaysOfWeek") { // Não processar recurrenceDaysOfWeek aqui
         dataValues[key] = value === "" ? null : value;
       }
@@ -985,7 +990,7 @@ const handleSaveCampaign = async (values) => {
                                           <ListItem key={index} divider>
                                             <ListItemText
                                               primary={`${index + 1}ª Execução`}
-                                              secondary={typeof execution === 'string' ? execution : moment(execution).format('DD/MM/YYYY HH:mm')}
+                                              secondary={typeof execution === 'string' ? execution : moment(execution).tz(APP_TIMEZONE).format('DD/MM/YYYY HH:mm')}
                                             />
                                           </ListItem>
                                         ))}

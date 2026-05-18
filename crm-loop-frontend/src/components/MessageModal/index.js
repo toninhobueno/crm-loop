@@ -22,7 +22,8 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import AttachFileIcon from "@material-ui/icons/AttachFile";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import moment from "moment";
+import moment from "moment-timezone";
+import { formatDateTimeForApi } from "../../utils/dateTimezone";
 
 import { i18n } from "../../translate/i18n";
 
@@ -252,7 +253,7 @@ const MessageModal = ({ open, onClose, messageId, reload }) => {
       for (const [key, value] of Object.entries(scheduleMessage)) {
         switch (key) {
           case "data_mensagem_programada":
-            formData.append(key, moment(value).format("YYYY-MM-DD HH:mm:ss"));
+            formData.append(key, formatDateTimeForApi(value));
             break;
 
           default:

@@ -6,6 +6,8 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
+      TZ: America/Sao_Paulo
+      PGTZ: America/Sao_Paulo
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "Sa@43690"
       POSTGRES_DB: database
@@ -21,6 +23,8 @@ services:
 
   redis:
     image: redis:7-alpine
+    environment:
+      TZ: America/Sao_Paulo
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]

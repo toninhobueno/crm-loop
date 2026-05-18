@@ -1,37 +1,39 @@
-import moment from "moment";
+import moment from "moment-timezone";
+import {
+  APP_TIMEZONE,
+  formatDateTimeForApi,
+  formatDateTimeToClient,
+  formatDateToClient,
+  parseApiDate
+} from "../../utils/dateTimezone";
 
 export function useDate() {
   function dateToClient(strDate) {
-    if (moment(strDate).isValid()) {
-      return moment(strDate).format("DD/MM/YYYY");
-    }
-    return strDate;
+    return formatDateToClient(strDate);
   }
 
   function datetimeToClient(strDate) {
-    if (moment(strDate).isValid()) {
-      return moment(strDate).format("DD/MM/YYYY HH:mm");
-    }
-    return strDate;
+    return formatDateTimeToClient(strDate);
   }
 
   function dateToDatabase(strDate) {
-    if (moment(strDate, "DD/MM/YYYY").isValid()) {
-      return moment(strDate).format("YYYY-MM-DD HH:mm:ss");
+    if (moment(strDate, "DD/MM/YYYY", true).isValid()) {
+      return moment
+        .tz(strDate, "DD/MM/YYYY", APP_TIMEZONE)
+        .format("YYYY-MM-DD HH:mm:ss");
     }
-    return strDate;
+    return formatDateTimeForApi(strDate);
   }
 
   function returnDays(date) {
-    let data1 = new Date()
-    let data2 = new Date(date)
-    let result = data2.getTime() - data1.getTime();
-    let days = Math.ceil(result / (1000 * 60 * 60 * 24));
-
-    if (days === -0) {
-      days = 0
+    const data1 = moment().tz(APP_TIMEZONE).startOf("day");
+    const parsed = parseApiDate(date);
+    if (!parsed) {
+      return 0;
     }
-    return days;
+    const data2 = parsed.startOf("day");
+    const days = data2.diff(data1, "days");
+    return days === 0 ? 0 : days;
   }
 
   return {

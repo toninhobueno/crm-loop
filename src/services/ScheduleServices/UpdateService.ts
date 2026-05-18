@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import AppError from "../../errors/AppError";
 import Schedule from "../../models/Schedule";
 import ShowService from "./ShowService";
+import { parseLocalDateTime } from "../../utils/timezone";
 
 interface ScheduleData {
   id?: number;
@@ -77,7 +78,7 @@ const UpdateUserService = async ({
 
   await schedule.update({
     body,
-    sendAt,
+    sendAt: sendAt != null ? parseLocalDateTime(sendAt) : schedule.sendAt,
     sentAt,
     contactId,
     ticketId,
@@ -95,7 +96,7 @@ const UpdateUserService = async ({
     // ✅ Se tem lembrete, não marcar como PENDENTE para não ser processado no horário original
     status: reminderDate ? 'AGUARDANDO_LEMBRETE' : 'PENDENTE',
     // ✅ Incluir campos de lembrete
-    reminderDate: reminderDate || null,
+    reminderDate: reminderDate ? parseLocalDateTime(reminderDate) : null,
     reminderMessage: null, // Não usar mais o campo reminderMessage
     reminderStatus: reminderDate ? 'PENDENTE' : null
   });

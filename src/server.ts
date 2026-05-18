@@ -1,4 +1,6 @@
 import 'dotenv/config';
+
+process.env.TZ = process.env.TZ || "America/Sao_Paulo";
 import gracefulShutdown from "http-graceful-shutdown";
 import app from "./app";
 import cron from "node-cron";

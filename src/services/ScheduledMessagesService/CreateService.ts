@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import AppError from "../../errors/AppError";
 import ScheduledMessages from "../../models/ScheduledMessages";
+import { parseLocalDateTime } from "../../utils/timezone";
 import Tag from "../../models/Tag";
 import Contact from "../../models/Contact";
 
@@ -87,7 +88,9 @@ const CreateService = async ({
 
   const schedule = await ScheduledMessages.create(
     {
-      data_mensagem_programada,
+      data_mensagem_programada: parseLocalDateTime(
+        data_mensagem_programada as unknown as string
+      ),
       id_conexao,
       intervalo,
       valor_intervalo,

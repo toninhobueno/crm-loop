@@ -26,6 +26,7 @@ import AppError from "../errors/AppError";
 import { CancelService } from "../services/CampaignService/CancelService";
 import { RestartService } from "../services/CampaignService/RestartService";
 import RecurrenceService from "../services/CampaignService/RecurrenceService";
+import { parseLocalDateTime } from "../utils/timezone";
 
 type IndexQuery = {
   searchParam: string;
@@ -197,7 +198,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
         return null;
       })(),
       recurrenceDayOfMonth: (isRecurring && recurrenceType === 'monthly') ? recurrenceDayOfMonth : null,
-      recurrenceEndDate: (isRecurring && recurrenceEndDate) ? new Date(recurrenceEndDate) : null,
+      recurrenceEndDate: (isRecurring && recurrenceEndDate) ? recurrenceEndDate : null,
       maxExecutions: (isRecurring && maxExecutions) ? maxExecutions : null,
       executionCount: 0,
       nextScheduledAt: null,
@@ -205,6 +206,26 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     };
 
     console.log('[Campaign Store] Dados processados:', processedRecurrenceData);
+
+    await schema.validate({
+      name,
+      confirmation,
+      scheduledAt,
+      contactListId,
+      tagListId,
+      whatsappId,
+      userId,
+      queueId,
+      statusTicket,
+      openTicket,
+      isRecurring: processedRecurrenceData.isRecurring,
+      recurrenceType: processedRecurrenceData.recurrenceType,
+      recurrenceInterval: processedRecurrenceData.recurrenceInterval,
+      recurrenceDaysOfWeek: processedRecurrenceData.recurrenceDaysOfWeek,
+      recurrenceDayOfMonth: processedRecurrenceData.recurrenceDayOfMonth,
+      recurrenceEndDate: processedRecurrenceData.recurrenceEndDate,
+      maxExecutions: processedRecurrenceData.maxExecutions
+    });
 
     const processedData = {
       name,
@@ -219,7 +240,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       confirmationMessage4: confirmationMessage4 || null,
       confirmationMessage5: confirmationMessage5 || null,
       confirmation,
-      scheduledAt,
+      scheduledAt: parseLocalDateTime(scheduledAt),
       contactListId: contactListId || null,
       tagListId: tagListId === "Nenhuma" ? null : tagListId,
       whatsappId,
@@ -229,11 +250,12 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       openTicket,
       companyId,
       status: "PROGRAMADA",
-      // Adicionar campos de recorrência processados
-      ...processedRecurrenceData
+      ...processedRecurrenceData,
+      recurrenceEndDate:
+        isRecurring && recurrenceEndDate
+          ? parseLocalDateTime(recurrenceEndDate)
+          : null
     };
-
-    await schema.validate(processedData);
 
     const campaign = await Campaign.create(processedData);
 
@@ -363,9 +385,29 @@ export const update = async (req: Request, res: Response): Promise<Response> => 
         return null;
       })(),
       recurrenceDayOfMonth: (isRecurring && recurrenceType === 'monthly') ? recurrenceDayOfMonth : null,
-      recurrenceEndDate: (isRecurring && recurrenceEndDate) ? new Date(recurrenceEndDate) : null,
+      recurrenceEndDate: (isRecurring && recurrenceEndDate) ? recurrenceEndDate : null,
       maxExecutions: (isRecurring && maxExecutions) ? maxExecutions : null
     };
+
+    await schema.validate({
+      name,
+      confirmation,
+      scheduledAt,
+      contactListId,
+      tagListId,
+      whatsappId,
+      userId,
+      queueId,
+      statusTicket,
+      openTicket,
+      isRecurring: processedRecurrenceData.isRecurring,
+      recurrenceType: processedRecurrenceData.recurrenceType,
+      recurrenceInterval: processedRecurrenceData.recurrenceInterval,
+      recurrenceDaysOfWeek: processedRecurrenceData.recurrenceDaysOfWeek,
+      recurrenceDayOfMonth: processedRecurrenceData.recurrenceDayOfMonth,
+      recurrenceEndDate: processedRecurrenceData.recurrenceEndDate,
+      maxExecutions: processedRecurrenceData.maxExecutions
+    });
 
     const processedData = {
       name,
@@ -380,7 +422,7 @@ export const update = async (req: Request, res: Response): Promise<Response> => 
       confirmationMessage4: confirmationMessage4 || null,
       confirmationMessage5: confirmationMessage5 || null,
       confirmation,
-      scheduledAt,
+      scheduledAt: parseLocalDateTime(scheduledAt),
       contactListId: contactListId || null,
       tagListId: tagListId === "Nenhuma" ? null : tagListId,
       whatsappId,
@@ -389,11 +431,12 @@ export const update = async (req: Request, res: Response): Promise<Response> => 
       statusTicket,
       openTicket,
       companyId,
-      // Adicionar campos de recorrência processados
-      ...processedRecurrenceData
+      ...processedRecurrenceData,
+      recurrenceEndDate:
+        isRecurring && recurrenceEndDate
+          ? parseLocalDateTime(recurrenceEndDate)
+          : null
     };
-
-    await schema.validate(processedData);
 
     const campaign = await Campaign.findOne({
       where: { id: campaignId, companyId },

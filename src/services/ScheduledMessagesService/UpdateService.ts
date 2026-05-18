@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import AppError from "../../errors/AppError";
 import ScheduledMessages from "../../models/ScheduledMessages";
 import ShowService from "./ShowService";
+import { parseLocalDateTime } from "../../utils/timezone";
 import Contact from "../../models/Contact";
 import Tag from "../../models/Tag";
 
@@ -59,7 +60,9 @@ const UpdateUserService = async ({
   } = scheduleData;
 
   let data = {
-    data_mensagem_programada,
+    data_mensagem_programada: parseLocalDateTime(
+      data_mensagem_programada as unknown as string
+    ),
     id_conexao,
     intervalo,
     valor_intervalo,
