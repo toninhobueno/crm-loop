@@ -4,6 +4,7 @@ import {
   formatDateTimeForApi,
   formatDateTimeToClient,
   formatDateToClient,
+  formatScheduledAtToClient,
   parseApiDate
 } from "../../utils/dateTimezone";
 
@@ -14,6 +15,10 @@ export function useDate() {
 
   function datetimeToClient(strDate) {
     return formatDateTimeToClient(strDate);
+  }
+
+  function scheduledAtToClient(strDate) {
+    return formatScheduledAtToClient(strDate);
   }
 
   function dateToDatabase(strDate) {
@@ -39,6 +44,7 @@ export function useDate() {
   return {
     dateToClient,
     datetimeToClient,
+    scheduledAtToClient,
     dateToDatabase,
     returnDays
   };

@@ -141,7 +141,7 @@ const Campaigns = () => {
   const [campaigns, dispatch] = useReducer(reducer, []);
   const { user, socket } = useContext(AuthContext);
 
-  const { datetimeToClient } = useDate();
+  const { scheduledAtToClient, datetimeToClient } = useDate();
   const { getPlanCompany } = usePlans();
 
   useEffect(() => {
@@ -566,14 +566,14 @@ const Campaigns = () => {
                         </TableCell>
                         <TableCell align="center">
                           {campaign.scheduledAt
-                            ? datetimeToClient(campaign.scheduledAt)
+                            ? scheduledAtToClient(campaign.scheduledAt)
                             : "Sem agendamento"}
                         </TableCell>
                         <TableCell align="center" className={classes.nextExecutionCell}>
                           {campaign.isRecurring && campaign.nextScheduledAt ? (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                               <ScheduleIcon fontSize="small" color="primary" />
-                              {datetimeToClient(campaign.nextScheduledAt)}
+                              {scheduledAtToClient(campaign.nextScheduledAt)}
                             </div>
                           ) : campaign.isRecurring && campaign.status === 'FINALIZADA' ? (
                             <span style={{ color: '#666', fontSize: '0.875rem' }}>

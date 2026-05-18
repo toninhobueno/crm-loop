@@ -258,8 +258,20 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     };
 
     const campaign = await Campaign.create(processedData);
+    await campaign.reload();
 
-    console.log('[Campaign Store] Campanha criada:', campaign.id);
+    const scheduledAtIso =
+      campaign.scheduledAt instanceof Date
+        ? campaign.scheduledAt.toISOString()
+        : campaign.scheduledAt;
+    console.log(
+      "[Campaign Store] Campanha criada:",
+      campaign.id,
+      "| scheduledAt recebido:",
+      scheduledAt,
+      "| gravado (ISO UTC):",
+      scheduledAtIso
+    );
 
     // Se for recorrente, calcular próxima execução
     if (campaign.isRecurring) {

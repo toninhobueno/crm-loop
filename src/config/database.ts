@@ -29,7 +29,9 @@ module.exports = {
     idle: parseInt(process.env.DB_POOL_IDLE) || 600000
   },
   dialect: process.env.DB_DIALECT || "postgres",
-  timezone: 'America/Sao_Paulo',
+  // UTC no Sequelize: conversão de fuso fica em parseLocalDateTime (salvar) e no front (exibir).
+  // Evita gravar 16:37 como UTC quando o usuário quis 16:37 em São Paulo.
+  timezone: "+00:00",
   host: process.env.DB_HOST || "localhost",
   port: process.env.DB_PORT || "5432",
   database: process.env.DB_NAME,

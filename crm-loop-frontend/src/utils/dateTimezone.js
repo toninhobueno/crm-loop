@@ -6,8 +6,16 @@ export function parseApiDate(value) {
   if (value == null || value === "") {
     return null;
   }
-  const parsed = moment(value);
-  return parsed.isValid() ? parsed.tz(APP_TIMEZONE) : null;
+  const m = moment(value);
+  if (!m.isValid()) {
+    return null;
+  }
+  return m.tz(APP_TIMEZONE);
+}
+
+/** Campanhas / agendamentos: exibir no fuso de São Paulo (requer API com UTC correto). */
+export function formatScheduledAtToClient(value) {
+  return formatDateTimeToClient(value);
 }
 
 export function formatDateTimeToClient(value) {

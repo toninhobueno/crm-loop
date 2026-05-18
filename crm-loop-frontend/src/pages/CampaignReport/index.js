@@ -192,7 +192,7 @@ const CampaignReport = () => {
   const mounted = useRef(true);
   const { user, socket } = useContext(AuthContext);
 
-  const { datetimeToClient } = useDate();
+  const { datetimeToClient, scheduledAtToClient } = useDate();
   const { getPlanCompany } = usePlans();
   
   // Dados para o gráfico de pizza
@@ -793,7 +793,7 @@ const CampaignReport = () => {
                   </Avatar>
                 }
                 title={i18n.t("campaignReport.schedule")}
-                subheader={datetimeToClient(campaign.scheduledAt) || "Não agendado"}
+                subheader={scheduledAtToClient(campaign.scheduledAt) || "Não agendado"}
               />
             </Card>
           </Grid>
