@@ -10,6 +10,7 @@ import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import Queue from "../../models/Queue";
 import User from "../../models/User";
 import CheckContactOpenTickets from "../../helpers/CheckContactOpenTickets";
+import { assertUserCanUseWhatsappId } from "../../helpers/resolveUserWhatsappAccess";
 
 import CreateLogTicketService from "./CreateLogTicketService";
 import ShowTicketService from "./ShowTicketService";
@@ -50,6 +51,11 @@ const CreateTicketService = async ({
   }
   if (!defaultWhatsapp)
     defaultWhatsapp = await GetDefaultWhatsApp(companyId);
+
+  const user = await User.findByPk(userId);
+  if (user) {
+    assertUserCanUseWhatsappId(user, defaultWhatsapp.id);
+  }
 
   // console.log("defaultWhatsapp", defaultWhatsapp.id, defaultWhatsapp.channel)
   await CheckContactOpenTickets(contactId, defaultWhatsapp.id);

@@ -15,6 +15,16 @@ import { Session } from "../../libs/wbot";
 import axios from "axios";
 import fs from "fs";
 import path, { join } from "path";
+import {
+  extractPhoneFromJid,
+  isInvalidContactName,
+  isLikelyLidNumber,
+  isLikelyPhoneNumber,
+  resolveContactDisplayName,
+  resolveWhatsappPhone,
+  toWhatsAppUserJid
+} from "../../helpers/resolveWhatsappPhone";
+import { normalizeJid } from "../../utils";
 
 const lidUpdateMutex = new Mutex();
 
@@ -132,45 +142,61 @@ export async function verifyContact(
     profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
   }
 
-  const isLid = msgContact.id.includes("@lid") || false;
-  console.log("[DEBUG RODRIGO] isLid", isLid)
   const isGroup = msgContact.id.includes("@g.us");
-  const isWhatsappNet = msgContact.id.includes("@s.whatsapp.net");
+  const isLid = msgContact.id.includes("@lid") || false;
+  let originalLid =
+    msgContact.lid ||
+    (msgContact.id.includes("@lid") ? msgContact.id : null);
 
-  // Extrair o número do ID
-  const idParts = msgContact.id.split('@');
-  const extractedId = idParts[0];
+  let number = extractPhoneFromJid(msgContact.id);
+  let contactJid = normalizeJid(msgContact.id);
 
-  // Extrair qualquer número de telefone adicional que possa estar presente
-  const extractedPhone = extractedId.split(':')[0]; // Remove parte após ":" se existir
+  if (!isGroup) {
+    const resolved = await resolveWhatsappPhone(wbot, {
+      jid: msgContact.id,
+      lid: originalLid,
+      senderPn: msgContact.senderPn,
+      number
+    });
 
-  // Determinar número e LID adequadamente
-  let number = extractedPhone;
-  console.log("[DEBUG RODRIGO] number", number)
-  let originalLid = msgContact.lid || null;
-  console.log("[DEBUG RODRIGO] originalLid", originalLid)
-
-  // Se o ID estiver no formato telefone:XX@s.whatsapp.net, extraia apenas o telefone
-  if (isWhatsappNet && extractedId.includes(':')) {
-    logger.info(`[RDS-LID-FIX] ID contém separador ':' - extraindo apenas o telefone: ${extractedPhone}`);
+    if (resolved) {
+      number = resolved.number;
+      contactJid = resolved.remoteJid;
+      if (resolved.lid) {
+        originalLid = resolved.lid;
+      }
+      logger.info(
+        `[RDS-LID] Telefone resolvido: ${number} (jid: ${contactJid})`
+      );
+    } else if (isLikelyLidNumber(number) || isLid) {
+      logger.warn(
+        `[RDS-LID] Não foi possível resolver telefone real para ${msgContact.id}; contato pode falhar ao enviar`
+      );
+    }
   }
 
-  // Verificar se o "número" parece ser um LID (muito longo para ser telefone)
-  const isNumberLikelyLid = !isLid && number && number.length > 15 && !isGroup;
-  if (isNumberLikelyLid) {
-    logger.info(`[RDS-LID-FIX] Número extraído parece ser um LID (muito longo): ${number}`);
+  if (!isGroup && !isLikelyPhoneNumber(number)) {
+    const fallbackDigits = extractPhoneFromJid(contactJid);
+    if (isLikelyPhoneNumber(fallbackDigits)) {
+      number = fallbackDigits;
+    }
   }
 
-  logger.info(`[RDS-LID-FIX] Processando contato - ID original: ${msgContact.id}, número extraído: ${number}, LID detectado: ${originalLid || "não"}`);
+  const displayName = resolveContactDisplayName(
+    msgContact?.name,
+    number,
+    originalLid
+  );
 
   const contactData = {
-    name: msgContact?.name || msgContact.id.replace(/\D/g, ""),
+    name: displayName,
     number,
     profilePicUrl,
     urlPicture: urlPicture || "nopicture.png",
     isGroup,
     companyId,
-    lid: originalLid  // Adicionar o LID aos dados do contato quando disponível
+    lid: originalLid,
+    remoteJid: !isGroup ? contactJid : undefined
   };
 
   if (isGroup) {
@@ -180,7 +206,6 @@ export async function verifyContact(
   return lidUpdateMutex.runExclusive(async () => {
     let foundContact: Contact | null = null;
     if (isLid) {
-      console.log("[DEBUG RODRIGO] isLid", JSON.stringify(msgContact, null, 2))
       foundContact = await Contact.findOne({
         where: {
           companyId,
@@ -192,7 +217,6 @@ export async function verifyContact(
         include: ["tags", "extraInfo", "whatsappLidMap"]
       });
     } else {
-      console.log("[DEBUG RODRIGO] No isLid", JSON.stringify(msgContact, null, 2))
       foundContact = await Contact.findOne({
         where: {
           companyId,
@@ -200,11 +224,18 @@ export async function verifyContact(
         },
       });
     }
-    console.log("[DEBUG RODRIGO] foundContact", foundContact?.id)
     if (isLid) {
       if (foundContact) {
         return updateContact(foundContact, {
-          profilePicUrl: contactData.profilePicUrl
+          profilePicUrl: contactData.profilePicUrl,
+          name: displayName,
+          ...(isLikelyPhoneNumber(contactData.number)
+            ? {
+                number: contactData.number,
+                remoteJid: contactData.remoteJid,
+                lid: originalLid
+              }
+            : {})
         });
       }
 
@@ -275,7 +306,6 @@ export async function verifyContact(
             logger.warn(`[RDS CONTATO] Contato ${msgContact.id} não encontrado no WhatsApp, mas continuando processamento`);
           }
         } catch (error) {
-          console.log("[DEBUG RODRIGO] error", JSON.stringify(error, null, 2))
           logger.error(`[RDS CONTATO] Erro ao verificar contato ${msgContact.id} no WhatsApp: ${error.message}`);
 
           try {
@@ -301,9 +331,22 @@ export async function verifyContact(
           }
         }
       }
-      return updateContact(foundContact, {
-        profilePicUrl: contactData.profilePicUrl
-      });
+      const updatePayload: Record<string, unknown> = {
+        profilePicUrl: contactData.profilePicUrl,
+        name:
+          isInvalidContactName(foundContact.name, contactData.number) ||
+          foundContact.name === foundContact.number
+            ? displayName
+            : foundContact.name
+      };
+
+      if (isLikelyPhoneNumber(contactData.number)) {
+        updatePayload.number = contactData.number;
+        updatePayload.remoteJid = contactData.remoteJid;
+        updatePayload.lid = originalLid || foundContact.lid;
+      }
+
+      return updateContact(foundContact, updatePayload);
     } else if (!isGroup && !foundContact) {
       let newContact: Contact | null = null;
 
@@ -342,21 +385,19 @@ export async function verifyContact(
 
 
         try {
-          const firstItem = ow && ow.length > 0 ? ow[0] : null;
-          if (firstItem) {
-            const firstItemAny = firstItem as any;
-            if (firstItemAny.jid) {
-              const parts = String(firstItemAny.jid).split('@');
-              if (parts.length > 0) {
-                const owNumber = parts[0];
-                if (owNumber && owNumber !== number) {
-
-                }
-              }
+          const firstItem = ow?.[0] as { jid?: string; lid?: string } | undefined;
+          if (firstItem?.jid) {
+            const owNumber = extractPhoneFromJid(firstItem.jid);
+            if (isLikelyPhoneNumber(owNumber)) {
+              number = owNumber;
+              contactData.number = owNumber;
+              contactData.remoteJid = normalizeJid(firstItem.jid);
             }
           }
         } catch (e) {
-          logger.error(`[RDS-LID-FIX] Erro ao extrair número da resposta onWhatsApp: ${e.message}`);
+          logger.error(
+            `[RDS-LID-FIX] Erro ao extrair número da resposta onWhatsApp: ${e.message}`
+          );
         }
 
 
@@ -387,6 +428,7 @@ export async function verifyContact(
 
             return updateContact(lidContact, {
               number: contactData.number,
+              remoteJid: contactData.remoteJid || toWhatsAppUserJid(contactData.number),
               profilePicUrl: contactData.profilePicUrl
             });
           } else {
@@ -412,7 +454,6 @@ export async function verifyContact(
           }
         }
       } catch (error) {
-        console.log("[DEBUG RODRIGO] error", JSON.stringify(error, null, 2))
         logger.error(`[RDS CONTATO] Erro ao verificar contato ${msgContact.id} no WhatsApp: ${error.message}`);
 
         newContact = await CreateOrUpdateContactService(contactData);

@@ -9,6 +9,10 @@ import UpdateContactService from "../services/ContactServices/UpdateContactServi
 import DeleteContactService from "../services/ContactServices/DeleteContactService";
 import GetContactService from "../services/ContactServices/GetContactService";
 import CheckContactNumber from "../services/WbotServices/CheckNumber";
+import {
+  isLikelyLidNumber,
+  isLikelyPhoneNumber
+} from "../helpers/resolveWhatsappPhone";
 import GetProfilePicUrl from "../services/WbotServices/GetProfilePicUrl";
 import AppError from "../errors/AppError";
 import {
@@ -305,8 +309,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   }
 
   if (!newContact.isGroup) {
+    if (isLikelyLidNumber(newContact.number)) {
+      throw new AppError("ERR_INVALID_CONTACT_NUMBER", 400);
+    }
     const validNumber = await CheckContactNumber(newContact.number, companyId);
-    const number = validNumber.jid.replace(/\D/g, "");
+    const number = validNumber.jid.split("@")[0];
+    if (!isLikelyPhoneNumber(number)) {
+      throw new AppError("ERR_INVALID_CONTACT_NUMBER", 400);
+    }
     newContact.number = number;
   }
 

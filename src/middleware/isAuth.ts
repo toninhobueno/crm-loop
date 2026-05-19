@@ -5,8 +5,8 @@ import AppError from "../errors/AppError";
 import authConfig from "../config/auth";
 
 import { getIO } from "../libs/socket";
-import ShowUserService from "../services/UserServices/ShowUserService";
 import { updateUser } from "../helpers/updateUser";
+import User from "../models/User";
 // import { moment} from "moment-timezone"
 
 interface TokenPayload {
@@ -42,10 +42,15 @@ const isAuth = async (req: Request, res: Response, next: NextFunction): Promise<
 
     updateUser(id, companyId);
 
+    const dbUser = await User.findByPk(id, {
+      attributes: ["id", "profile", "companyId", "whatsappId"]
+    });
+
     req.user = {
       id,
-      profile,
+      profile: dbUser?.profile || profile,
       companyId,
+      whatsappId: dbUser?.whatsappId,
       super: superMaster === true
     };
   } catch (err: any) {

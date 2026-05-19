@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import api from '../../services/api';
 import { AuthContext } from '../../context/Auth/AuthContext';
@@ -6,12 +6,17 @@ import { toast } from 'react-toastify';
 import { i18n } from '../../translate/i18n';
 import { useHistory } from 'react-router-dom';
 import { setKanbanLaneOrder, getKanbanLaneOrder } from '../../services/companyKanbanService';
-import { Button, TextField, Paper, FormControl, InputLabel, Select, Box } from '@material-ui/core';
+import { Button, TextField, Paper, FormControl, InputLabel, Select, Box, IconButton } from '@material-ui/core';
 import { format } from 'date-fns';
 import { Can } from '../../components/Can';
 import MainContainer from '../../components/MainContainer';
 import KanbanBoard from './KanbanBoard';
 import CrmSectionTabs from '../../components/CrmSectionTabs';
+import { WhatsappsFilter } from '../../components/WhatsappsFilter';
+import { TagsFilter } from '../../components/TagsFilter';
+import { UsersFilter } from '../../components/UsersFilter';
+import { StatusFilter } from '../../components/StatusFilter';
+import { FilterAlt, FilterAltOff } from '@mui/icons-material';
 
 const useStyles = makeStyles(theme => ({
   pageRoot: {
@@ -91,6 +96,20 @@ const useStyles = makeStyles(theme => ({
       borderRadius: 10,
     },
   },
+  filtersPaper: {
+    padding: theme.spacing(1, 1.5, 0.5),
+    marginBottom: theme.spacing(1.5),
+    borderRadius: 12,
+    border: 'none',
+    backgroundColor:
+      theme.palette.type === 'dark' ? theme.palette.background.paper : '#fff',
+    boxShadow: '0 1px 3px rgba(15,23,42,0.06)',
+    flexShrink: 0,
+  },
+  filterIcon: {
+    color: theme.palette.type === 'light' ? theme.palette.primary.main : '#FFF',
+    cursor: 'pointer',
+  },
 }));
 
 const Kanban = () => {
@@ -110,6 +129,15 @@ const Kanban = () => {
 
   const [laneOrder, setLaneOrder] = useState(null);
   const [loadingLaneOrder, setLoadingLaneOrder] = useState(true);
+
+  const [selectedWhatsapp, setSelectedWhatsapp] = useState([]);
+  const [defaultWhatsapps, setDefaultWhatsapps] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [filter, setFilter] = useState(false);
+  const [filtersReady, setFiltersReady] = useState(false);
+  const filterTimeoutRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('sortOrder', sortOrder);
@@ -134,6 +162,35 @@ const Kanban = () => {
   }, [user]);
 
   useEffect(() => {
+    const loadCompanyWhatsapps = async () => {
+      try {
+        const { data } = await api.get('/whatsapp');
+        const list = data.map(w => ({
+          id: w.id,
+          name: w.name,
+          channel: w.channel,
+        }));
+        if (list.length === 1) {
+          setDefaultWhatsapps(list);
+          setSelectedWhatsapp([list[0].id]);
+        } else if (user?.whatsappId) {
+          const userConnection = list.find(w => w.id === user.whatsappId);
+          if (userConnection) {
+            setDefaultWhatsapps([userConnection]);
+            setSelectedWhatsapp([userConnection.id]);
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar conexões:', err);
+      } finally {
+        setFiltersReady(true);
+      }
+    };
+    loadCompanyWhatsapps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -143,28 +200,53 @@ const Kanban = () => {
       const response = await api.get('/tag/kanban/');
       const fetchedTags = response.data.lista || [];
       setTags(fetchedTags);
-      fetchTickets(fetchedTags);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const fetchTickets = async (fetchedTags = tags) => {
+  const fetchTickets = async () => {
     try {
-      const { data } = await api.get('/ticket/kanban', {
-        params: {
-          queueIds: JSON.stringify(queueIds),
-          startDate: startDate,
-          endDate: endDate,
-        },
-      });
+      const params = {
+        queueIds: JSON.stringify(queueIds),
+        startDate,
+        endDate,
+      };
+
+      if (selectedWhatsapp.length > 0) {
+        params.whatsapps = JSON.stringify(selectedWhatsapp);
+      }
+      if (selectedTags.length > 0) {
+        params.tags = JSON.stringify(selectedTags);
+      }
+      if (selectedUsers.length > 0) {
+        params.users = JSON.stringify(selectedUsers);
+      }
+      if (selectedStatus.length > 0) {
+        params.statusFilter = JSON.stringify(selectedStatus);
+      }
+
+      const { data } = await api.get('/ticket/kanban', { params });
       setTickets(data.tickets);
-      organizeLanes(fetchedTags, data.tickets);
     } catch (err) {
       console.log(err);
       setTickets([]);
     }
   };
+
+  useEffect(() => {
+    if (!filtersReady) return;
+    fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    filtersReady,
+    selectedWhatsapp,
+    selectedTags,
+    selectedUsers,
+    selectedStatus,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     const companyId = user.companyId;
@@ -183,10 +265,61 @@ const Kanban = () => {
       socket.off(`company-${companyId}-appMessage`, onAppMessage);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, user.companyId]);
+  }, [
+    socket,
+    user.companyId,
+    selectedWhatsapp,
+    selectedTags,
+    selectedUsers,
+    selectedStatus,
+    startDate,
+    endDate,
+  ]);
 
   const handleSearchClick = () => {
     fetchTickets();
+  };
+
+  const scheduleFilterRefresh = updater => {
+    clearTimeout(filterTimeoutRef.current);
+    filterTimeoutRef.current = setTimeout(() => {
+      updater();
+    }, 300);
+  };
+
+  const handleSelectedWhatsapps = selecteds => {
+    scheduleFilterRefresh(() => {
+      setSelectedWhatsapp(selecteds.map(t => t.id));
+    });
+  };
+
+  const handleSelectedTags = selecteds => {
+    scheduleFilterRefresh(() => {
+      setSelectedTags(selecteds.map(t => t.id));
+    });
+  };
+
+  const handleSelectedUsers = selecteds => {
+    scheduleFilterRefresh(() => {
+      setSelectedUsers(selecteds.map(t => t.id));
+    });
+  };
+
+  const handleSelectedStatus = selecteds => {
+    scheduleFilterRefresh(() => {
+      setSelectedStatus(selecteds.map(t => t.status));
+    });
+  };
+
+  const handleFilterToggle = () => {
+    if (filter) {
+      setFilter(false);
+      setSelectedTags([]);
+      setSelectedUsers([]);
+      setSelectedStatus([]);
+    } else {
+      setFilter(true);
+    }
   };
 
   const handleStartDateChange = event => {
@@ -338,6 +471,37 @@ const Kanban = () => {
     <MainContainer crm>
       <Box className={classes.pageRoot}>
       <CrmSectionTabs />
+      <Paper className={classes.filtersPaper} elevation={0}>
+        <Box display="flex" alignItems="flex-start">
+          <Box flex={1}>
+            <WhatsappsFilter
+              onFiltered={handleSelectedWhatsapps}
+              initialWhatsapps={defaultWhatsapps}
+            />
+          </Box>
+          <IconButton
+            aria-label="filter"
+            onClick={handleFilterToggle}
+            size="small"
+            style={{ marginTop: 4 }}
+          >
+            {filter ? (
+              <FilterAlt className={classes.filterIcon} />
+            ) : (
+              <FilterAltOff className={classes.filterIcon} />
+            )}
+          </IconButton>
+        </Box>
+        {filter && (
+          <>
+            <TagsFilter onFiltered={handleSelectedTags} />
+            <StatusFilter onFiltered={handleSelectedStatus} />
+            {user.profile === 'admin' && (
+              <UsersFilter onFiltered={handleSelectedUsers} />
+            )}
+          </>
+        )}
+      </Paper>
       <Paper className={classes.toolbarPaper} elevation={0}>
           <Box className={classes.toolbarRow}>
             <FormControl

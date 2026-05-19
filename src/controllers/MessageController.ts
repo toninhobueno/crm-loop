@@ -32,6 +32,7 @@ import { sendFacebookMessage } from "../services/FacebookServices/sendFacebookMe
 import SendNotificameHubMessage from "../services/NotificameHub/SendNotificameHubMessage";
 import SendNotificameHubMedia from "../services/NotificameHub/SendNotificameHubMedia";
 import CheckReadStatusService from "../services/NotificameHub/CheckReadStatusService";
+import { assertUserCanAccessTicketWhatsapp } from "../helpers/resolveUserWhatsappAccess";
 
 import ShowPlanCompanyService from "../services/CompanyService/ShowPlanCompanyService";
 import ListMessagesServiceAll from "../services/MessageServices/ListMessagesServiceAll";
@@ -157,6 +158,11 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     messagesPerConversation: messagesPerConversation ? Number(messagesPerConversation) : undefined
   });
 
+  assertUserCanAccessTicketWhatsapp(
+    { profile: req.user.profile, whatsappId: req.user.whatsappId },
+    ticket.whatsappId
+  );
+
   if (["whatsapp", "whatsapp_oficial"].includes(ticket.channel) && ticket.whatsappId) {
     SetTicketMessagesAsRead(ticket);
   }
@@ -243,9 +249,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const { ticketId } = req.params;
   const { body, quotedMsg, vCard, isPrivate = "false" }: MessageData = req.body;
   const medias = req.files as Express.Multer.File[];
-  const { companyId } = req.user;
+  const { companyId, profile, whatsappId } = req.user;
 
   const ticket = await ShowTicketService(ticketId, companyId);
+
+  assertUserCanAccessTicketWhatsapp(
+    { profile, whatsappId },
+    ticket.whatsappId
+  );
 
   if (!ticket.whatsappId) {
     throw new AppError("Este ticket não possui conexão vinculada, provavelmente foi excluída a conexão.", 400);

@@ -42,6 +42,7 @@ import {
 import QuickMessageComponent from "../models/QuickMessageComponent";
 import CreateService from "../services/QuickMessageService/CreateService";
 import QuickMessage from "../models/QuickMessage";
+import { filterWhatsappsForUser } from "../helpers/resolveUserWhatsappAccess";
 
 interface WhatsappData {
   name: string;
@@ -98,11 +99,13 @@ interface QueryParams {
 }
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
-  const { companyId } = req.user;
+  const { companyId, profile, whatsappId } = req.user;
   const { session } = req.query as QueryParams;
   const whatsapps = await ListWhatsAppsService({ companyId, session });
 
-  return res.status(200).json(whatsapps);
+  return res.status(200).json(
+    filterWhatsappsForUser({ profile, whatsappId }, whatsapps)
+  );
 };
 
 export const indexFilter = async (
@@ -118,7 +121,11 @@ export const indexFilter = async (
     channel
   });
 
-  return res.status(200).json(whatsapps);
+  const { profile, whatsappId } = req.user;
+
+  return res.status(200).json(
+    filterWhatsappsForUser({ profile, whatsappId }, whatsapps)
+  );
 };
 
 export const store = async (req: Request, res: Response): Promise<Response> => {

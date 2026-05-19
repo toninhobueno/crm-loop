@@ -20,6 +20,10 @@ import ListTicketsServiceReport from "../services/TicketServices/ListTicketsServ
 import RelatorioVendasService from "../services/ReportService/RelatorioVendasService";
 import SetTicketMessagesAsRead from "../helpers/SetTicketMessagesAsRead";
 import { Mutex } from "async-mutex";
+import {
+  assertUserCanAccessTicketWhatsapp,
+  assertUserCanUseWhatsappId
+} from "../helpers/resolveUserWhatsappAccess";
 
 type IndexQuery = {
   searchParam: string;
@@ -225,14 +229,18 @@ export const kanban = async (
     date,
     dateStart,
     dateEnd,
+    startDate,
+    endDate,
     updatedAt,
     searchParam,
     showAll,
     queueIds: queueIdsStringified,
     tags: tagIdsStringified,
     users: userIdsStringified,
+    whatsapps: whatsappIdsStringified,
+    statusFilter: statusFilterStringified,
     withUnreadMessages
-  } = req.query as IndexQuery;
+  } = req.query as IndexQuery & { startDate?: string; endDate?: string };
 
   const userId = req.user.id;
   const { companyId } = req.user;
@@ -240,6 +248,8 @@ export const kanban = async (
   let queueIds: number[] = [];
   let tagsIds: number[] = [];
   let usersIds: number[] = [];
+  let whatsappIds: number[] = [];
+  let statusFilter: string[] = [];
 
   if (queueIdsStringified) {
     queueIds = JSON.parse(queueIdsStringified);
@@ -253,15 +263,28 @@ export const kanban = async (
     usersIds = JSON.parse(userIdsStringified);
   }
 
+  if (whatsappIdsStringified) {
+    whatsappIds = JSON.parse(whatsappIdsStringified);
+  }
+
+  if (statusFilterStringified) {
+    statusFilter = JSON.parse(statusFilterStringified);
+  }
+
+  const dateStartParam = dateStart || startDate;
+  const dateEndParam = dateEnd || endDate;
+
   const { tickets, count, hasMore } = await ListTicketsServiceKanban({
     searchParam,
     tags: tagsIds,
     users: usersIds,
+    whatsappIds,
+    statusFilter,
     pageNumber,
     status,
     date,
-    dateStart,
-    dateEnd,
+    dateStart: dateStartParam,
+    dateEnd: dateEndParam,
     updatedAt,
     showAll,
     userId,
@@ -276,7 +299,14 @@ export const kanban = async (
 export const store = async (req: Request, res: Response): Promise<Response> => {
   const { contactId, status, userId, queueId, whatsappId }: TicketData =
     req.body;
-  const { companyId } = req.user;
+  const { companyId, profile, whatsappId: userWhatsappId } = req.user;
+
+  if (whatsappId) {
+    assertUserCanUseWhatsappId(
+      { profile, whatsappId: userWhatsappId },
+      Number(whatsappId)
+    );
+  }
 
   try {
     const ticket = await CreateTicketService({
@@ -322,9 +352,14 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { ticketId } = req.params;
-  const { id: userId, companyId } = req.user;
+  const { id: userId, companyId, profile, whatsappId } = req.user;
 
   const contact = await ShowTicketService(ticketId, companyId);
+
+  assertUserCanAccessTicketWhatsapp(
+    { profile, whatsappId },
+    contact.whatsappId
+  );
 
   await CreateLogTicketService({
     userId,
@@ -352,9 +387,14 @@ export const showFromUUID = async (
   res: Response
 ): Promise<Response> => {
   const { uuid } = req.params;
-  const { id: userId, companyId } = req.user;
+  const { id: userId, companyId, profile, whatsappId } = req.user;
 
   const ticket: Ticket = await ShowTicketUUIDService(uuid, companyId);
+
+  assertUserCanAccessTicketWhatsapp(
+    { profile, whatsappId },
+    ticket.whatsappId
+  );
 
   if (
     ["whatsapp", "whatsapp_oficial"].includes(ticket.channel) &&
@@ -379,7 +419,13 @@ export const update = async (
 ): Promise<Response> => {
   const { ticketId } = req.params;
   const ticketData: TicketData = req.body;
-  const { companyId } = req.user;
+  const { companyId, profile, whatsappId } = req.user;
+
+  const existingTicket = await ShowTicketService(ticketId, companyId);
+  assertUserCanAccessTicketWhatsapp(
+    { profile, whatsappId },
+    existingTicket.whatsappId
+  );
 
   const mutex = new Mutex();
   const { ticket } = await mutex.runExclusive(async () => {

@@ -35,7 +35,6 @@ import DialogActions from "@material-ui/core/DialogActions";
 
 import Button from "@material-ui/core/Button";
 import TransferTicketModalCustom from "../TransferTicketModalCustom";
-import AcceptTicketWithouSelectQueue from "../AcceptTicketWithoutQueueModal";
 import NewTicketModal from "../NewTicketModal";
 
 //icones
@@ -112,10 +111,6 @@ const TicketActionButtonsCustom = ({
   const [newTicketModalOpen, setNewTicketModalOpen] = useState(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [contactId, setContactId] = useState(null);
-  const [
-    acceptTicketWithouSelectQueueOpen,
-    setAcceptTicketWithouSelectQueueOpen,
-  ] = useState(false);
   const [showTicketLogOpen, setShowTicketLogOpen] = useState(false);
   const [openTicketMessageDialog, setOpenTicketMessageDialog] = useState(false);
   const [disableBot, setDisableBot] = useState(ticket.contact.disableBot);
@@ -328,10 +323,6 @@ const TicketActionButtonsCustom = ({
     setOpenAlert(false);
     setLoading(false);
   };
-  const handleOpenAcceptTicketWithouSelectQueue = async () => {
-    setAcceptTicketWithouSelectQueueOpen(true);
-  };
-
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
     setMenuOpen(true);
@@ -756,14 +747,6 @@ const TicketActionButtonsCustom = ({
           queue={queueTicketOpen}
         />
       )}
-      {acceptTicketWithouSelectQueueOpen && (
-        <AcceptTicketWithouSelectQueue
-          modalOpen={acceptTicketWithouSelectQueueOpen}
-          onClose={(e) => setAcceptTicketWithouSelectQueueOpen(false)}
-          ticketId={ticket.id}
-          ticket={ticket}
-        />
-      )}
       {showTicketLogOpen && (
         <ShowTicketLogModal
           isOpen={showTicketLogOpen}
@@ -955,24 +938,18 @@ const TicketActionButtonsCustom = ({
             )}
           </>
         )}
-        {ticket.status === "pending" &&
-          (ticket.queueId === null || ticket.queueId === undefined) && (
-            <ButtonWithSpinner
-              loading={loading}
-              size="small"
-              variant="contained"
-              onClick={(e) => handleOpenAcceptTicketWithouSelectQueue()}
-            >
-              {i18n.t("messagesList.header.buttons.accept")}
-            </ButtonWithSpinner>
-          )}
-        {ticket.status === "pending" && ticket.queueId !== null && (
+        {ticket.status === "pending" && (
           <ButtonWithSpinner
             loading={loading}
             size="small"
             variant="contained"
-            // color="primary"
-            onClick={(e) => handleUpdateTicketStatus(e, "open", user?.id)}
+            onClick={(e) =>
+              handleUpdateTicketStatus(
+                e,
+                ticket.isGroup ? "group" : "open",
+                user?.id
+              )
+            }
           >
             {i18n.t("messagesList.header.buttons.accept")}
           </ButtonWithSpinner>

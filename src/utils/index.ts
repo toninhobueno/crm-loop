@@ -34,23 +34,12 @@ export function normalizeJid(jid: string): string {
     return jid;
   }
 
+  // LID (@lid) não é telefone — não converter para @s.whatsapp.net
   if (jid.includes('@lid')) {
-    const base = jid.split('@')[0];
-
-    if (!/^\d+$/.test(base)) {
-      if (ENABLE_LID_DEBUG) logger.warn(`[RDS-LID] normalizeJid - Formato inválido para @lid: ${jid}`);
-      return jid;
+    if (ENABLE_LID_DEBUG) {
+      logger.info(`[RDS-LID] normalizeJid - Preservando JID @lid: ${jid}`);
     }
-
-    let normalized;
-    if (base.length > 15 || jid.includes('g.us')) {
-      normalized = base + '@g.us';
-      if (ENABLE_LID_DEBUG) logger.info(`[RDS-LID] normalizeJid - @lid convertido para grupo: ${normalized}`);
-    } else {
-      normalized = base + '@s.whatsapp.net';
-      if (ENABLE_LID_DEBUG) logger.info(`[RDS-LID] normalizeJid - @lid convertido para usuário: ${normalized}`);
-    }
-    return normalized;
+    return jid;
   }
 
   if (!jid.includes('@')) {

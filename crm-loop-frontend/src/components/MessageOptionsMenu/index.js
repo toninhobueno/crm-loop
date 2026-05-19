@@ -18,8 +18,6 @@ import { useHistory } from "react-router-dom";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import ForwardModal from "../../components/ForwardMessageModal";
 import ShowTicketOpen from "../ShowTicketOpenModal";
-import AcceptTicketWithoutQueue from "../AcceptTicketWithoutQueueModal";
-
 const MessageOptionsMenu = ({
   message,
   menuOpen,
@@ -40,10 +38,6 @@ const MessageOptionsMenu = ({
   const [openAlert, setOpenAlert] = useState(false);
   const [userTicketOpen, setUserTicketOpen] = useState("");
   const [queueTicketOpen, setQueueTicketOpen] = useState("");
-  const [acceptTicketWithouSelectQueueOpen, setAcceptTicketWithouSelectQueueOpen] = useState(false);
-
-  const [ticketOpen, setTicketOpen] = useState(null);
-
   const { showSelectMessageCheckbox,
     setShowSelectMessageCheckbox,
     selectedMessages,
@@ -62,13 +56,8 @@ const MessageOptionsMenu = ({
         whatsappId: whatsappId
       });
 
-      setTicketOpen(ticket);
-      if (ticket.queueId === null) {
-        setAcceptTicketWithouSelectQueueOpen(true);
-      } else {
-        setTabOpen("open");
-        history.push(`/tickets/${ticket.uuid}`);
-      }
+      setTabOpen("open");
+      history.push(`/tickets/${ticket.uuid}`);
     } catch (err) {
       const ticket = JSON.parse(err.response.data.error);
 
@@ -147,12 +136,6 @@ const MessageOptionsMenu = ({
 
   return (
     <>
-      <AcceptTicketWithoutQueue
-        modalOpen={acceptTicketWithouSelectQueueOpen}
-        onClose={(e) => setAcceptTicketWithouSelectQueueOpen(false)}
-        ticket={ticketOpen}
-        ticketId={ticketOpen?.id}
-      />
       <ShowTicketOpen
         isOpen={openAlert}
         handleClose={handleCloseAlert}

@@ -62,6 +62,15 @@ const ListMessagesService = async ({
 
   let ticketIds = [];
   if (!isAllHistoricEnabled) {
+    const queueIdFilter =
+      queues.length > 0
+        ? user.profile === "admin" ||
+          user.allTicket === "enable" ||
+          (ticket.isGroup && user.allowGroup)
+          ? { [Op.or]: [queues, null] }
+          : { [Op.in]: queues }
+        : null;
+
     ticketIds = await Ticket.findAll({
       where:
       {
@@ -70,11 +79,7 @@ const ListMessagesService = async ({
         contactId: ticket.contactId,
         whatsappId: ticket.whatsappId,
         isGroup: ticket.isGroup,
-        queueId: user.profile === "admin" || user.allTicket === "enable" || (ticket.isGroup && user.allowGroup) ?
-          {
-            [Op.or]: [queues, null]
-          } :
-          { [Op.in]: queues },
+        ...(queueIdFilter ? { queueId: queueIdFilter } : {}),
       },
       attributes: ["id"]
     });

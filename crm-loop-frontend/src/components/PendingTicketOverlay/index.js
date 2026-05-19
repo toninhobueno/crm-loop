@@ -21,7 +21,6 @@ import {TicketsContext} from "../../context/Tickets/TicketsContext";
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import AcceptTicketWithouSelectQueue from "../AcceptTicketWithoutQueueModal";
 
 const useStyles = makeStyles((theme) => ({
   overlay: {
@@ -139,22 +138,10 @@ const PendingTicketOverlay = ({
   const { user } = useContext(AuthContext);
   const { setTabOpen } = useContext(TicketsContext);
   const [loading, setLoading] = useState(false);
-  
-  // ✅ ADICIONAR ESTADO PARA MODAL DE SELEÇÃO DE FILA
-  const [acceptTicketWithouSelectQueueOpen, setAcceptTicketWithouSelectQueueOpen] = useState(false);
 
-  // ✅ CORRIGIDO: Lógica igual ao TicketActionButtonsCustom
   const handleAcceptTicket = async () => {
     if (loading || isAccepting) return;
-    
-    // ✅ VERIFICAR SE TICKET TEM FILA ASSOCIADA
-    if (ticket.queueId === null || ticket.queueId === undefined) {
-      // Se não tem departamento, abrir modal para escolher
-      setAcceptTicketWithouSelectQueueOpen(true);
-      return;
-    }
 
-    // ✅ Se tem departamento, aceitar diretamente (lógica original)
     setLoading(true);
     try {
       await api.put(`/tickets/${ticket.id}`, {
@@ -170,11 +157,6 @@ const PendingTicketOverlay = ({
     } finally {
       setLoading(false);
     }
-  };
-
-  // ✅ FUNÇÃO PARA FECHAR MODAL DE SELEÇÃO DE FILA
-  const handleCloseAcceptTicketWithouSelectQueue = () => {
-    setAcceptTicketWithouSelectQueueOpen(false);
   };
 
   return (
@@ -234,16 +216,6 @@ const PendingTicketOverlay = ({
           </Typography>
         </Paper>
       </Box>
-
-      {/* ✅ MODAL PARA SELECIONAR FILA QUANDO TICKET NÃO TEM FILA */}
-      {acceptTicketWithouSelectQueueOpen && (
-        <AcceptTicketWithouSelectQueue
-          modalOpen={acceptTicketWithouSelectQueueOpen}
-          onClose={handleCloseAcceptTicketWithouSelectQueue}
-          ticketId={ticket.id}
-          ticket={ticket}
-        />
-      )}
     </>
   );
 };

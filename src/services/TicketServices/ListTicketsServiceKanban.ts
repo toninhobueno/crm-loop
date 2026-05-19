@@ -13,6 +13,7 @@ import TicketTag from "../../models/TicketTag";
 import ContactWallet from "../../models/ContactWallet";
 import { intersection } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
+import { resolveWhatsappIdsForUser } from "../../helpers/resolveUserWhatsappAccess";
  
 interface Request {
   searchParam?: string;
@@ -28,6 +29,8 @@ interface Request {
   queueIds: number[];
   tags: number[];
   users: number[];
+  whatsappIds?: number[];
+  statusFilter?: string[];
   companyId: number;
 }
 
@@ -43,6 +46,8 @@ const ListTicketsServiceKanban = async ({
   queueIds,
   tags,
   users,
+  whatsappIds,
+  statusFilter,
   status,
   date,
   dateStart,
@@ -56,6 +61,7 @@ const ListTicketsServiceKanban = async ({
   // Verificar se o usuário é admin
   const user = await ShowUserService(userId, companyId);
   const isAdmin = user.profile === 'admin';
+  const effectiveWhatsappIds = resolveWhatsappIdsForUser(user, whatsappIds);
   
   let whereCondition: Filterable["where"] = isAdmin 
     ? { queueId: { [Op.or]: [queueIds, null] } }
@@ -120,10 +126,24 @@ const ListTicketsServiceKanban = async ({
     whereCondition = { queueId: { [Op.or]: [queueIds, null] } };
   }
 
-  whereCondition = {
-    ...whereCondition,
-    status: { [Op.or]: ["pending", "open"] }
-  };
+  if (Array.isArray(statusFilter) && statusFilter.length > 0) {
+    whereCondition = {
+      ...whereCondition,
+      status: { [Op.in]: statusFilter }
+    };
+  } else {
+    whereCondition = {
+      ...whereCondition,
+      status: { [Op.or]: ["pending", "open"] }
+    };
+  }
+
+  if (effectiveWhatsappIds?.length) {
+    whereCondition = {
+      ...whereCondition,
+      whatsappId: { [Op.in]: effectiveWhatsappIds }
+    };
+  }
 
   if (searchParam) {
     const sanitizedSearchParam = searchParam.toLocaleLowerCase().trim();
@@ -170,6 +190,7 @@ const ListTicketsServiceKanban = async ({
 
   if (dateStart && dateEnd) {
     whereCondition = {
+      ...whereCondition,
       createdAt: {
         [Op.between]: [+startOfDay(parseISO(dateStart)), +endOfDay(parseISO(dateEnd))]
       }

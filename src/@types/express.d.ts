@@ -4,6 +4,7 @@ declare namespace Express {
       id: string;
       profile: string;
       companyId: number;
+      whatsappId?: number;
       /** Preenchido pelo JWT quando emitido com campo master (`helpers/CreateTokens`). */
       super?: boolean;
     };

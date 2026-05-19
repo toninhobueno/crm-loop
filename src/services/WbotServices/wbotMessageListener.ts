@@ -88,6 +88,10 @@ import ShowContactService from "../ContactServices/ShowContactService";
 
 import { ENABLE_LID_DEBUG } from "../../config/debug";
 import { normalizeJid } from "../../utils";
+import {
+  resolveContactDisplayName,
+  resolveWhatsappPhone
+} from "../../helpers/resolveWhatsappPhone";
 import { handleOpenAiFlow } from "../IntegrationsServices/OpenAiService";
 import { getJidOf } from "./getJidOf";
 import { verifyContact } from "./verifyContact";
@@ -438,27 +442,59 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session) => {
   const key: IExtendedMessageKey = msg.key;
 
   const isGroup = msg.key.remoteJid.includes("g.us");
-  const rawNumber = msg.key.remoteJid.replace(/\D/g, "");
-  console.log("[DEBUG RODRIGO] key", JSON.stringify(key, null, 2))
-  const lid = key.sender_lid && key?.sender_lid.includes("@lid") ? key.sender_lid : key.participant_lid && key?.participant_lid.includes("@lid") ? key.participant_lid : key.remoteJid && key?.remoteJid.includes("@lid") ? key.remoteJid : null;
-  const senderPn = key.sender_pn && key.sender_pn.length > 0 ? key.sender_pn : key.participant_pn && key.participant_pn.length > 0 ? key.participant_pn : null;
-  console.log("[DEBUG RODRIGO] senderPn", senderPn)
-  const remoteJid = !key.remoteJid.includes("@lid") ? key.remoteJid : key.remoteJid.includes("@lid") && senderPn !== null ? senderPn : lid;
-  console.log("[DEBUG RODRIGO] remoteJid", remoteJid)
-  // Usa o identificador normalizado que considera o lid
-  // const normalizedId = normalizeContactIdentifier(msg);
+  const lid =
+    key.sender_lid?.includes("@lid")
+      ? key.sender_lid
+      : key.participant_lid?.includes("@lid")
+        ? key.participant_lid
+        : key.remoteJid?.includes("@lid")
+          ? key.remoteJid
+          : null;
+
+  const senderPn =
+    (key.sender_pn && key.sender_pn.length > 0 ? key.sender_pn : null) ||
+    (key.participant_pn && key.participant_pn.length > 0
+      ? key.participant_pn
+      : null) ||
+    (key.peer_recipient_pn && key.peer_recipient_pn.length > 0
+      ? key.peer_recipient_pn
+      : null);
+
+  let contactJid = key.remoteJid;
+
+  if (!isGroup && contactJid?.includes("@lid")) {
+    if (senderPn) {
+      contactJid = senderPn.includes("@")
+        ? senderPn
+        : `${String(senderPn).replace(/\D/g, "")}@s.whatsapp.net`;
+    } else if (lid) {
+      const resolved = await resolveWhatsappPhone(wbot, { jid: lid, lid });
+      if (resolved) {
+        contactJid = resolved.remoteJid;
+      }
+    }
+  }
+
+  contactJid = normalizeJid(contactJid);
+  const phoneDigits = contactJid.split("@")[0].split(":")[0].replace(/\D/g, "");
+  const displayName = resolveContactDisplayName(
+    msg.pushName,
+    phoneDigits,
+    lid
+  );
 
   return isGroup
     ? {
-      id: getSenderMessage(msg, wbot),
-      name: msg.pushName,
-      lid: lid
-    }
+        id: getSenderMessage(msg, wbot),
+        name: msg.pushName || displayName,
+        lid
+      }
     : {
-      id: remoteJid,
-      name: msg.key.fromMe ? rawNumber : msg.pushName,
-      lid: lid
-    };
+        id: contactJid,
+        name: displayName,
+        lid: lid && String(lid).includes("@lid") ? lid : null,
+        senderPn: senderPn || undefined
+      };
 };
 
 function findCaption(obj) {

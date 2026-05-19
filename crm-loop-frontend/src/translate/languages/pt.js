@@ -808,7 +808,7 @@ const messages = {
         title: {
           add: "Nova Tag",
           edit: "Editar Tag",
-          addKanban: "Nova Lane",
+          addKanban: "Nova Coluna",
           editKanban: "Editar Lane",
         },
         form: {
@@ -1689,7 +1689,7 @@ const messages = {
           actions: "Ações",
         },
         buttons: {
-          add: "Nova Lane",
+          add: "Nova Coluna",
         },
         toasts: {
           deleted: "Lane excluída com sucesso.",
@@ -1988,6 +1988,8 @@ const messages = {
         ERR_USER_CREATION_DISABLED:
           "A criação do usuário foi desabilitada pelo administrador.",
         ERR_NO_PERMISSION: "Você não tem permissão para acessar este recurso.",
+        ERR_NO_PERMISSION_WHATSAPP:
+          "Você não tem permissão para acessar tickets desta conexão.",
         ERR_DUPLICATED_CONTACT: "Já existe um contato com este número.",
         ERR_NO_SETTING_FOUND: "Nenhuma configuração encontrada com este ID.",
         ERR_NO_CONTACT_FOUND: "Nenhum contato encontrado com este ID.",

@@ -41,7 +41,7 @@ const useTickets = ({
                 status,
                 date,
                 updatedAt,
-                showAll,
+                showAll: showAll === true || showAll === "true" ? "true" : "false",
                 queueIds,
                 withUnreadMessages,
                 whatsapps: whatsappIds,
@@ -76,7 +76,7 @@ const useTickets = ({
             const {data} = await api.get("/dashboard/moments", {
               params: {
                 status,
-                showAll,
+                showAll: showAll === true || showAll === "true" ? "true" : "false",
                 queueIds,
                 dateStart: format(sub(new Date(), { days: 30 }), 'yyyy-MM-dd'),
                 dateEnd: format(new Date(), 'yyyy-MM-dd'),

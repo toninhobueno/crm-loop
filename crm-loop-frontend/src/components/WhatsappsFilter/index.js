@@ -1,13 +1,17 @@
 import { Box, Chip, TextField } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import toastError from "../../errors/toastError";
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
+import { AuthContext } from "../../context/Auth/AuthContext";
 
 export function WhatsappsFilter({ onFiltered, initialWhatsapps }) {
+  const { user } = useContext(AuthContext);
   const [whatsapps, setWhatsapps] = useState([]);
   const [selecteds, setSelecteds] = useState([]);
+  const isRestrictedUser =
+    user?.profile !== "admin" && Boolean(user?.whatsappId);
 
   useEffect(() => {
     async function fetchData() {
@@ -31,7 +35,14 @@ export function WhatsappsFilter({ onFiltered, initialWhatsapps }) {
   const loadWhatsapps = async () => {
     try {
       const { data } = await api.get(`/whatsapp`);
-      const whatsappList = data.map((w) => ({ id: w.id, name: w.name, channel: w.channel }));
+      let whatsappList = data.map((w) => ({
+        id: w.id,
+        name: w.name,
+        channel: w.channel,
+      }));
+      if (isRestrictedUser) {
+        whatsappList = whatsappList.filter((w) => w.id === user.whatsappId);
+      }
       setWhatsapps(whatsappList);
     } catch (err) {
       toastError(err);
@@ -39,17 +50,19 @@ export function WhatsappsFilter({ onFiltered, initialWhatsapps }) {
   };
 
   const onChange = async (value) => {
-    setSelecteds(value);
-    onFiltered(value);
+    const normalized = Array.isArray(value) ? value : value ? [value] : [];
+    setSelecteds(normalized);
+    onFiltered(normalized);
   };
 
   return (
     <Box style={{ padding: "0px 10px 10px" }}>
       <Autocomplete
-        multiple
+        multiple={!isRestrictedUser}
         size="small"
         options={whatsapps}
         value={selecteds}
+        disabled={isRestrictedUser && whatsapps.length <= 1}
         onChange={(e, v, r) => onChange(v)}
         getOptionLabel={(option) => option.name}
         getOptionSelected={(option, value) => {

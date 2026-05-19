@@ -1,33 +1,23 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import { useTheme } from "@material-ui/core/styles";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   makeStyles,
   Paper,
   InputBase,
-  Tabs,
-  Tab,
   Badge,
   IconButton,
-  Typography,
   Grid,
   Tooltip,
   Switch,
 } from "@material-ui/core";
 import {
-  Group,
   MoveToInbox as MoveToInboxIcon,
   CheckBox as CheckBoxIcon,
-  MessageSharp as MessageSharpIcon,
-  AccessTime as ClockIcon,
   Search as SearchIcon,
   Add as AddIcon,
   TextRotateUp,
   TextRotationDown,
-  Android as AndroidIcon,
 } from "@material-ui/icons";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 
 import { FilterAltOff, FilterAlt, PlaylistAddCheckOutlined } from "@mui/icons-material";
@@ -35,8 +25,6 @@ import { FilterAltOff, FilterAlt, PlaylistAddCheckOutlined } from "@mui/icons-ma
 import NewTicketModal from "../NewTicketModal";
 import TicketsList from "../TicketsListCustom";
 import TabPanel from "../TabPanel";
-import { Can } from "../Can";
-import TicketsQueueSelect from "../TicketsQueueSelect";
 import { TagsFilter } from "../TagsFilter";
 import { UsersFilter } from "../UsersFilter";
 import { StatusFilter } from "../StatusFilter";
@@ -45,8 +33,6 @@ import { Button, Snackbar } from "@material-ui/core";
 
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import { QueueSelectedContext } from "../../context/QueuesSelected/QueuesSelectedContext";
-
 import api from "../../services/api";
 import { TicketsContext } from "../../context/Tickets/TicketsContext";
 
@@ -388,7 +374,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TicketsManagerTabs = () => {
-  const theme = useTheme();
   const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
@@ -396,7 +381,6 @@ const TicketsManagerTabs = () => {
   const [searchParam, setSearchParam] = useState("");
   const [tab, setTab] = useState("open");
   const [newTicketModalOpen, setNewTicketModalOpen] = useState(false);
-  const [showAllTickets, setShowAllTickets] = useState(false);
   const [sortTickets, setSortTickets] = useState(false);
 
   const searchInputRef = useRef();
@@ -404,59 +388,63 @@ const TicketsManagerTabs = () => {
 
   const { user } = useContext(AuthContext);
   const { profile } = user;
-  const { setSelectedQueuesMessage } = useContext(QueueSelectedContext);
   const { tabOpen, setTabOpen } = useContext(TicketsContext);
 
-  const [openCount, setOpenCount] = useState(0);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [groupingCount, setGroupingCount] = useState(0);
-
-  const userQueueIds = user.queues.map((q) => q.id);
-  const [selectedQueueIds, setSelectedQueueIds] = useState(userQueueIds || []);
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedWhatsapp, setSelectedWhatsapp] = useState([]);
+  const [defaultWhatsapps, setDefaultWhatsapps] = useState(null);
   const [forceSearch, setForceSearch] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState([]);
   const [filter, setFilter] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [hoveredButton, setHoveredButton] = useState(null);
-  const [isHoveredAll, setIsHoveredAll] = useState(false);
   const [isHoveredNew, setIsHoveredNew] = useState(false);
   const [isHoveredResolve, setIsHoveredResolve] = useState(false);
   const [isHoveredOpen, setIsHoveredOpen] = useState(false);
   const [isHoveredClosed, setIsHoveredClosed] = useState(false);
   const [isHoveredSort, setIsHoveredSort] = useState(false);
 
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  useEffect(() => {
+    const loadCompanyWhatsapps = async () => {
+      try {
+        const { data } = await api.get("/whatsapp");
+        const list = data.map((w) => ({
+          id: w.id,
+          name: w.name,
+          channel: w.channel,
+        }));
+        if (list.length === 1) {
+          setDefaultWhatsapps(list);
+          setSelectedWhatsapp([list[0].id]);
+          setForceSearch((prev) => !prev);
+        } else if (user?.whatsappId) {
+          const userConnection = list.find((w) => w.id === user.whatsappId);
+          if (userConnection) {
+            setDefaultWhatsapps([userConnection]);
+            setSelectedWhatsapp([userConnection.id]);
+            setForceSearch((prev) => !prev);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar conexões:", err);
+      }
+    };
+    loadCompanyWhatsapps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    setSelectedQueuesMessage(selectedQueueIds);
-  }, [selectedQueueIds]);
-
-  useEffect(() => {
-    if (user.profile.toUpperCase() === "ADMIN" || user.allUserChat.toUpperCase() === "ENABLED") {
-      setShowAllTickets(false);
-    }
-    
     // Verificar se há parâmetro 'tab' na URL ao carregar
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     if (tabParam && ["pending", "open", "group", "closed"].includes(tabParam)) {
-      // Definir a tab principal primeiro
-      if (tabParam === "pending") {
-        setTab("open"); // "Aguardando" está dentro da tab "open"
-      } else if (tabParam === "open") {
-        setTab("open");
-      } else if (tabParam === "closed") {
+      if (tabParam === "closed") {
         setTab("closed");
-      } else if (tabParam === "group") {
-        setTab("open"); // "Grupos" está dentro da tab "open"
+      } else {
+        setTab("open");
+        setTabOpen(tabParam === "group" ? "group" : "open");
       }
-      // Depois definir a sub-aba (tabOpen)
-      setTimeout(() => {
-        setTabOpen(tabParam);
-      }, 50);
     }
   }, []);
 
@@ -465,22 +453,13 @@ const TicketsManagerTabs = () => {
     const urlParams = new URLSearchParams(location.search);
     const tabParam = urlParams.get('tab');
     if (tabParam && ["pending", "open", "group", "closed"].includes(tabParam)) {
-      // Se o parâmetro tab mudou, atualizar a aba
-      if (tabOpen !== tabParam) {
-        // Definir a tab principal primeiro
-        if (tabParam === "pending") {
-          setTab("open"); // "Aguardando" está dentro da tab "open"
-        } else if (tabParam === "open") {
-          setTab("open");
-        } else if (tabParam === "closed") {
-          setTab("closed");
-        } else if (tabParam === "group") {
-          setTab("open"); // "Grupos" está dentro da tab "open"
+      if (tabParam === "closed") {
+        setTab("closed");
+      } else {
+        setTab("open");
+        if (tabOpen !== tabParam && tabParam !== "pending") {
+          setTabOpen(tabParam === "group" ? "group" : "open");
         }
-        // Depois definir a sub-aba (tabOpen) com um pequeno delay
-        setTimeout(() => {
-          setTabOpen(tabParam);
-        }, 100);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -524,17 +503,6 @@ const TicketsManagerTabs = () => {
     setTab(newValue);
   };
 
-  const handleChangeTabOpen = (e, newValue) => {
-    handleBack();
-    setTabOpen(newValue);
-  };
-
-  const applyPanelStyle = (status) => {
-    if (tabOpen !== status) {
-      return { width: 0, height: 0 };
-    }
-  };
-
   const handleSnackbarOpen = () => {
     setSnackbarOpen(true);
   };
@@ -547,7 +515,6 @@ const TicketsManagerTabs = () => {
     try {
       const { data } = await api.post("/tickets/closeAll", {
         status: tabOpen,
-        selectedQueueIds,
       });
       handleSnackbarClose();
     } catch (err) {
@@ -600,15 +567,10 @@ const TicketsManagerTabs = () => {
 
     clearTimeout(searchTimeout);
 
-    if (whatsapp.length === 0) {
-      setForceSearch(!forceSearch);
-    } else if (tab !== "search") {
-      setTab("search");
-    }
     searchTimeout = setTimeout(() => {
       setSelectedWhatsapp(whatsapp);
-      setForceSearch(!forceSearch);
-    }, 500);
+      setForceSearch((prev) => !prev);
+    }, 300);
   };
 
   const handleSelectedStatus = (selecteds) => {
@@ -631,19 +593,19 @@ const TicketsManagerTabs = () => {
   const handleFilter = () => {
     if (filter) {
       setFilter(false);
-      setTab("open");
       setSearchParam("");
       setSelectedTags([]);
       setSelectedUsers([]);
-      setSelectedWhatsapp([]);
       setSelectedStatus([]);
       setForceSearch(!forceSearch);
       if (searchInputRef.current) {
         searchInputRef.current.value = "";
       }
+      if (tab === "search") {
+        setTab("open");
+      }
     } else {
       setFilter(true);
-      setTab("search");
     }
   };
 
@@ -704,12 +666,9 @@ const TicketsManagerTabs = () => {
           variant="contained"
           aria-label="filter"
           className={classes.filterIcon}
-          onClick={() => {
-            setIsFilterActive((prevState) => !prevState);
-            handleFilter();
-          }}
+          onClick={handleFilter}
         >
-          {isFilterActive ? (
+          {filter ? (
             <FilterAlt className={classes.icon} />
           ) : (
             <FilterAltOff className={classes.icon} />
@@ -717,55 +676,21 @@ const TicketsManagerTabs = () => {
         </IconButton>
       </div>
 
-      {filter === true && (
+      <WhatsappsFilter
+        onFiltered={handleSelectedWhatsapps}
+        initialWhatsapps={defaultWhatsapps}
+      />
+
+      {filter && (
         <>
           <TagsFilter onFiltered={handleSelectedTags} />
-          <WhatsappsFilter onFiltered={handleSelectedWhatsapps} />
           <StatusFilter onFiltered={handleSelectedStatus} />
           {profile === "admin" && (
-            <>
-              <UsersFilter onFiltered={handleSelectedUsers} />
-            </>
+            <UsersFilter onFiltered={handleSelectedUsers} />
           )}
-        </>
-      )}
-
-      <Paper square elevation={0} className={classes.ticketOptionsBox}>
+          <Paper square elevation={0} className={classes.ticketOptionsBox}>
         <Grid container alignItems="center">
           <Grid item>
-            <Can
-              role={user.allUserChat === 'enabled' && user.profile === 'user' ? 'admin' : user.profile}
-              perform="tickets-manager:showall"
-              yes={() => (
-<Badge
-  color="primary"
-  invisible={
-    !isHoveredAll ||
-    isHoveredNew ||
-    isHoveredResolve ||
-    isHoveredOpen ||
-    isHoveredClosed
-  }
-  badgeContent={"Todos"}
-  classes={{ badge: classes.tabsBadge }}
->
-  <ToggleButton
-    onMouseEnter={() => setIsHoveredAll(true)}
-    onMouseLeave={() => setIsHoveredAll(false)}
-    className={`${classes.standardButton} ${showAllTickets ? classes.activeButton : ''}`}
-    value="uncheck"
-    selected={showAllTickets}
-    onChange={() => setShowAllTickets((prevState) => !prevState)}
-  >
-    {showAllTickets ? (
-      <VisibilityIcon className={`${classes.standardIcon} ${classes.activeIcon}`} />
-    ) : (
-      <VisibilityOffIcon className={classes.standardIcon} />
-    )}
-  </ToggleButton>
-</Badge>
-              )}
-            />
             <Snackbar
               open={snackbarOpen}
               onClose={handleSnackbarClose}
@@ -795,7 +720,6 @@ const TicketsManagerTabs = () => {
 <Badge
   color="primary"
   invisible={
-    isHoveredAll ||
     !isHoveredNew ||
     isHoveredResolve ||
     isHoveredOpen ||
@@ -819,7 +743,6 @@ const TicketsManagerTabs = () => {
   <Badge
     color="primary"
     invisible={
-      isHoveredAll ||
       isHoveredNew ||
       !isHoveredResolve ||
       isHoveredOpen ||
@@ -841,9 +764,8 @@ const TicketsManagerTabs = () => {
 {/* Botão "Abertos" */}
 <Badge
   invisible={
-    !(
+      !(
       tab === "open" &&
-      !isHoveredAll &&
       !isHoveredNew &&
       !isHoveredResolve &&
       !isHoveredClosed &&
@@ -881,7 +803,6 @@ const TicketsManagerTabs = () => {
   invisible={
     !(
       tab === "closed" &&
-      !isHoveredAll &&
       !isHoveredNew &&
       !isHoveredResolve &&
       !isHoveredOpen &&
@@ -918,7 +839,6 @@ const TicketsManagerTabs = () => {
     color="primary"
     invisible={
       !isHoveredSort ||
-      isHoveredAll ||
       isHoveredNew ||
       isHoveredResolve ||
       isHoveredOpen ||
@@ -944,190 +864,38 @@ const TicketsManagerTabs = () => {
   </Badge>
 )}
 
-{/* Movido o seletor de departamentos para a mesma linha dos botões */}
-<span className="MuiBadge-root">
-  <TicketsQueueSelect
-    selectedQueueIds={selectedQueueIds}
-    userQueues={user?.queues}
-    onChange={(values) => setSelectedQueueIds(values)}
-  />
-</span>
           </Grid>
         </Grid>
       </Paper>
+        </>
+      )}
 
       <TabPanel value={tab} name="open" className={classes.ticketsWrapper}>
-        <Tabs
-          value={tabOpen}
-          onChange={handleChangeTabOpen}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-          scrollButtons="auto"
-          TabIndicatorProps={{ className: classes.tabIndicator }}
-          className={classes.modernTabs}
-        >
-          {/* ATENDENDO */}
-          <Tab
-            label={
-              <Grid container alignItems="center" justifyContent="center" style={{ position: "relative", paddingTop: 10 }}>
-                <Grid item>
-                  <Badge
-                    overlap="circular"
-                    max={999}
-                    classes={{ badge: classes.customBadge }}
-                    badgeContent={openCount}
-                    color="primary"
-                  >
-                    <MessageSharpIcon
-                      style={{
-                        fontSize: 20,
-                        color: tabOpen === "open" ? theme.palette.primary.main : "inherit",
-                      }}
-                    />
-                  </Badge>
-                </Grid>
-                <Grid item>
-                  <Typography
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 11,
-                      fontWeight: tabOpen === "open" ? 700 : 500,
-                      color: tabOpen === "open" ? theme.palette.primary.main : "inherit",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    {i18n.t("ticketsList.assignedHeader")}
-                  </Typography>
-                </Grid>
-              </Grid>
-            }
-            value={"open"}
-            name="open"
-            classes={{ root: classes.tabPanelItem }}
-          />
-
-          {/* AGUARDANDO */}
-          <Tab
-            label={
-              <Grid container alignItems="center" justifyContent="center" style={{ position: "relative", paddingTop: 10 }}>
-                <Grid item>
-                  <Badge
-                    overlap="circular"
-                    max={999}
-                    classes={{ badge: classes.customBadge }}
-                    badgeContent={pendingCount}
-                    color="primary"
-                  >
-                    <ClockIcon
-                      style={{
-                        fontSize: 20,
-                        color: tabOpen === "pending" ? theme.palette.primary.main : "inherit",
-                      }}
-                    />
-                  </Badge>
-                </Grid>
-                <Grid item>
-                  <Typography
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 11,
-                      fontWeight: tabOpen === "pending" ? 700 : 500,
-                      color: tabOpen === "pending" ? theme.palette.primary.main : "inherit",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    {i18n.t("ticketsList.pendingHeader")}
-                  </Typography>
-                </Grid>
-              </Grid>
-            }
-            value={"pending"}
-            name="pending"
-            classes={{ root: classes.tabPanelItem }}
-          />
-
-          {/* GRUPOS */}
-          {user.allowGroup && (
-            <Tab
-              label={
-                <Grid container alignItems="center" justifyContent="center" style={{ position: "relative", paddingTop: 10 }}>
-                  <Grid item>
-                    <Badge
-                      overlap="circular"
-                      max={999}
-                      classes={{ badge: classes.customBadge }}
-                      badgeContent={groupingCount}
-                      color="primary"
-                    >
-                      <Group
-                        style={{
-                          fontSize: 20,
-                          color: tabOpen === "group" ? theme.palette.primary.main : "inherit",
-                        }}
-                      />
-                    </Badge>
-                  </Grid>
-                  <Grid item>
-                    <Typography
-                      style={{
-                        marginLeft: 8,
-                        fontSize: 11,
-                        fontWeight: tabOpen === "group" ? 700 : 500,
-                        color: tabOpen === "group" ? theme.palette.primary.main : "inherit",
-                        transition: "all 0.2s ease",
-                      }}
-                    >
-                      {i18n.t("ticketsList.groupingHeader")}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              }
-              value={"group"}
-              name="group"
-              classes={{ root: classes.tabPanelItem }}
-            />
-          )}
-        </Tabs>
-
-        <Paper className={classes.ticketsWrapper}>
+        {user.allowGroup && tabOpen === "group" ? (
           <TicketsList
-            status="open"
-            showAll={showAllTickets}
+            status="group"
+            showAll
             sortTickets={sortTickets ? "ASC" : "DESC"}
-            selectedQueueIds={selectedQueueIds}
-            updateCount={(val) => setOpenCount(val)}
-            style={applyPanelStyle("open")}
             setTabOpen={setTabOpen}
           />
+        ) : (
           <TicketsList
-            status="pending"
-            selectedQueueIds={selectedQueueIds}
+            status="active"
+            showAll
             sortTickets={sortTickets ? "ASC" : "DESC"}
-            showAll={user.profile === "admin" || user.allUserChat === 'enabled' ? showAllTickets : false}
-            updateCount={(val) => setPendingCount(val)}
-            style={applyPanelStyle("pending")}
+            whatsappIds={selectedWhatsapp}
+            forceSearch={forceSearch}
             setTabOpen={setTabOpen}
           />
-          {user.allowGroup && (
-            <TicketsList
-              status="group"
-              showAll={showAllTickets}
-              sortTickets={sortTickets ? "ASC" : "DESC"}
-              selectedQueueIds={selectedQueueIds}
-              updateCount={(val) => setGroupingCount(val)}
-              style={applyPanelStyle("group")}
-              setTabOpen={setTabOpen}
-            />
-          )}
-        </Paper>
+        )}
       </TabPanel>
 
       <TabPanel value={tab} name="closed" className={classes.ticketsWrapper}>
         <TicketsList
           status="closed"
-          showAll={showAllTickets}
-          selectedQueueIds={selectedQueueIds}
+          showAll
+          whatsappIds={selectedWhatsapp}
+          forceSearch={forceSearch}
           setTabOpen={setTabOpen}
         />
       </TabPanel>
@@ -1138,10 +906,9 @@ const TicketsManagerTabs = () => {
             <TicketsList
               statusFilter={selectedStatus}
               searchParam={searchParam}
-              showAll={showAllTickets}
+              showAll
               tags={selectedTags}
               users={selectedUsers}
-              selectedQueueIds={selectedQueueIds}
               whatsappIds={selectedWhatsapp}
               forceSearch={forceSearch}
               searchOnMessages={searchOnMessages}
@@ -1154,9 +921,8 @@ const TicketsManagerTabs = () => {
           <TicketsList
             statusFilter={selectedStatus}
             searchParam={searchParam}
-            showAll={false}
+            showAll
             tags={selectedTags}
-            selectedQueueIds={selectedQueueIds}
             whatsappIds={selectedWhatsapp}
             forceSearch={forceSearch}
             searchOnMessages={searchOnMessages}

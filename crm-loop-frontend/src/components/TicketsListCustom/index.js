@@ -103,9 +103,11 @@ const reducer = (state, action) => {
         newTickets.forEach((ticket) => {
             const ticketIndex = state.findIndex((t) => t.id === ticket.id);
             if (ticketIndex !== -1) {
-                state[ticketIndex] = ticket;
-                if (ticket.unreadMessages > 0) {
-                    state.unshift(state.splice(ticketIndex, 1)[0]);
+                const existing = state[ticketIndex];
+                const incomingTime = new Date(ticket.updatedAt || 0).getTime();
+                const existingTime = new Date(existing.updatedAt || 0).getTime();
+                if (incomingTime >= existingTime) {
+                    state[ticketIndex] = ticket;
                 }
             } else {
                 state.push(ticket);
@@ -196,6 +198,55 @@ const reducer = (state, action) => {
     }
 };
 
+const ACTIVE_STATUSES = ["open", "pending"];
+
+const ticketMatchesListStatus = (ticketStatus, listStatus) => {
+    if (listStatus === "active") {
+        return ACTIVE_STATUSES.includes(ticketStatus);
+    }
+    return ticketStatus === listStatus;
+};
+
+const formatMessagePreview = (message) => {
+    if (!message) return "";
+    const body = message.body || "";
+    const type = message.mediaType;
+
+    if (type === "audio" || type === "ptt") {
+        return body || "Áudio";
+    }
+    if (type === "image" || type === "sticker") {
+        return body || "Imagem";
+    }
+    if (type === "video") {
+        return body || "Vídeo";
+    }
+    if (type === "document" || type === "application") {
+        return body || "Documento";
+    }
+    if (type === "vcard" || body.includes("BEGIN:VCARD")) {
+        return "Contato";
+    }
+    if (body.includes("data:image/png;base64")) {
+        return "Localização";
+    }
+    return body;
+};
+
+const buildTicketFromAppMessage = (data) => {
+    const { ticket, message, contact } = data;
+    if (!ticket) return null;
+
+    const preview = formatMessagePreview(message);
+
+    return {
+        ...ticket,
+        contact: contact || ticket.contact,
+        lastMessage: preview || ticket.lastMessage,
+        updatedAt: message?.createdAt || ticket.updatedAt || new Date().toISOString(),
+    };
+};
+
 const TicketsListCustom = (props) => {
     const {
         setTabOpen,
@@ -205,7 +256,6 @@ const TicketsListCustom = (props) => {
         tags,
         users,
         showAll,
-        selectedQueueIds,
         updateCount,
         style,
         whatsappIds,
@@ -221,14 +271,13 @@ const TicketsListCustom = (props) => {
     //   const socketManager = useContext(SocketContext);
     const { user, socket } = useContext(AuthContext);
 
-    const { profile, queues } = user;
-    const showTicketWithoutQueue = user.allTicket === 'enable';
+    const { profile } = user;
     const companyId = user.companyId;
 
     useEffect(() => {
         dispatch({ type: "RESET" });
         setPageNumber(1);
-    }, [status, searchParam, dispatch, showAll, tags, users, forceSearch, selectedQueueIds, whatsappIds, statusFilter, sortTickets, searchOnMessages]);
+    }, [status, searchParam, dispatch, showAll, tags, users, forceSearch, whatsappIds, statusFilter, sortTickets, searchOnMessages]);
 
     const { tickets, hasMore, loading } = useTickets({
         pageNumber,
@@ -238,7 +287,7 @@ const TicketsListCustom = (props) => {
         searchOnMessages: searchOnMessages ? "true" : "false",
         tags: JSON.stringify(tags),
         users: JSON.stringify(users),
-        queueIds: JSON.stringify(selectedQueueIds),
+        queueIds: JSON.stringify([]),
         whatsappIds: JSON.stringify(whatsappIds),
         statusFilter: JSON.stringify(statusFilter),
         userFilter,
@@ -268,16 +317,20 @@ const TicketsListCustom = (props) => {
     }, [tickets]);
 
     useEffect(() => {
-        const shouldUpdateTicket = ticket => {
-            return (!ticket?.userId || ticket?.userId === user?.id || showAll) &&
-                ((!ticket?.queueId && showTicketWithoutQueue) || selectedQueueIds.indexOf(ticket?.queueId) > -1)
-            // (!blockNonDefaultConnections || (ticket.status == 'group' && ignoreUserConnectionForGroups) || !user?.whatsappId || ticket.whatsappId == user?.whatsappId);
-        }
-        // const shouldUpdateTicketUser = (ticket) =>
-        //     selectedQueueIds.indexOf(ticket?.queueId) > -1 && (ticket?.userId === user?.id || !ticket?.userId);
+        const matchesWhatsapp = (ticket) => {
+            if (profile !== "admin" && user?.whatsappId) {
+                return ticket?.whatsappId === user.whatsappId;
+            }
+            if (!whatsappIds?.length) return true;
+            return whatsappIds.indexOf(ticket?.whatsappId) > -1;
+        };
 
-        const notBelongsToUserQueues = (ticket) =>
-            ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1;
+        const shouldUpdateTicket = (ticket) => {
+            return (
+                matchesWhatsapp(ticket) &&
+                (!ticket?.userId || ticket?.userId === user?.id || showAll)
+            );
+        };
 
         const onCompanyTicketTicketsList = (data) => {
             // console.log("onCompanyTicketTicketsList", data)
@@ -291,24 +344,11 @@ const TicketsListCustom = (props) => {
             }
             // console.log(shouldUpdateTicket(data.ticket))
             if (data.action === "update" &&
-                shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
+                shouldUpdateTicket(data.ticket) && ticketMatchesListStatus(data.ticket.status, status)) {
                 dispatch({
                     type: "UPDATE_TICKET",
                     payload: data.ticket,
                     status: status,
-                    sortDir: sortTickets
-                });
-            }
-
-            // else if (data.action === "update" && shouldUpdateTicketUser(data.ticket) && data.ticket.status === status) {
-            //     dispatch({
-            //         type: "UPDATE_TICKET",
-            //         payload: data.ticket,
-            //     });
-            // }
-            if (data.action === "update" && notBelongsToUserQueues(data.ticket)) {
-                dispatch({
-                    type: "DELETE_TICKET", payload: data.ticket?.id, status: status,
                     sortDir: sortTickets
                 });
             }
@@ -323,21 +363,22 @@ const TicketsListCustom = (props) => {
         };
 
         const onCompanyAppMessageTicketsList = (data) => {
-            if (data.action === "create" &&
-                shouldUpdateTicket(data.ticket) && data.ticket.status === status) {
+            if (data.action !== "create" || !data.ticket) {
+                return;
+            }
+
+            const ticket = buildTicketFromAppMessage(data);
+
+            if (
+                shouldUpdateTicket(ticket) &&
+                ticketMatchesListStatus(ticket.status, status)
+            ) {
                 dispatch({
-                    type: "UPDATE_TICKET_UNREAD_MESSAGES",
-                    payload: data.ticket,
-                    status: status,
-                    sortDir: sortTickets
+                    type: "UPDATE_TICKET",
+                    payload: ticket,
+                    sortDir: sortTickets,
                 });
             }
-            // else if (data.action === "create" && shouldUpdateTicketUser(data.ticket) && data.ticket.status === status) {
-            //     dispatch({
-            //         type: "UPDATE_TICKET_UNREAD_MESSAGES",
-            //         payload: data.ticket,
-            //     });
-            // }
         };
 
         const onCompanyContactTicketsList = (data) => {
@@ -352,7 +393,10 @@ const TicketsListCustom = (props) => {
         };
 
         const onConnectTicketsList = () => {
-            if (status) {
+            if (status === "active") {
+                socket.emit("joinTickets", "open");
+                socket.emit("joinTickets", "pending");
+            } else if (status) {
                 socket.emit("joinTickets", status);
             } else {
                 socket.emit("joinNotification");
@@ -365,7 +409,10 @@ const TicketsListCustom = (props) => {
         socket.on(`company-${companyId}-contact`, onCompanyContactTicketsList);
 
         return () => {
-            if (status) {
+            if (status === "active") {
+                socket.emit("leaveTickets", "open");
+                socket.emit("leaveTickets", "pending");
+            } else if (status) {
                 socket.emit("leaveTickets", status);
             } else {
                 socket.emit("leaveNotification");
@@ -376,7 +423,18 @@ const TicketsListCustom = (props) => {
             socket.off(`company-${companyId}-contact`, onCompanyContactTicketsList);
         };
 
-    }, [status, showAll, user, selectedQueueIds, tags, users, profile, queues, sortTickets, showTicketWithoutQueue]);
+    }, [
+        status,
+        showAll,
+        user,
+        whatsappIds,
+        tags,
+        users,
+        profile,
+        sortTickets,
+        companyId,
+        socket,
+    ]);
 
     useEffect(() => {
         if (typeof updateCount === "function") {
@@ -400,7 +458,9 @@ const TicketsListCustom = (props) => {
     };
 
     if (status && status !== "search") {
-        ticketsList = ticketsList.filter(ticket => ticket.status === status)
+        ticketsList = ticketsList.filter((ticket) =>
+            ticketMatchesListStatus(ticket.status, status)
+        );
     }
 
     return (

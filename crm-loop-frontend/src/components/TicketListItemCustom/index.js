@@ -26,7 +26,6 @@ import { v4 as uuidv4 } from "uuid";
 import GroupIcon from "@material-ui/icons/Group";
 import ContactTag from "../ContactTag";
 import ConnectionIcon from "../ConnectionIcon";
-import AcceptTicketWithouSelectQueue from "../AcceptTicketWithoutQueueModal";
 import TransferTicketModalCustom from "../TransferTicketModalCustom";
 import ShowTicketOpen from "../ShowTicketOpenModal";
 import FinalizacaoVendaModal from "../FinalizacaoVendaModal";
@@ -236,10 +235,6 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
   const theme = useTheme();
   const history = useHistory();
   const [loading, setLoading] = useState(false);
-  const [
-    acceptTicketWithouSelectQueueOpen,
-    setAcceptTicketWithouSelectQueueOpen,
-  ] = useState(false);
   const [transferTicketModalOpen, setTransferTicketModalOpen] = useState(false);
   const [newTicketModalOpen, setNewTicketModalOpen] = useState(false);
 
@@ -280,10 +275,6 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
   const handleImageModalClose = () => {
     setImageModalOpen(false);
   };
-
-  const handleOpenAcceptTicketWithouSelectQueue = useCallback(() => {
-    setAcceptTicketWithouSelectQueueOpen(true);
-  }, []);
 
   const handleCloseTicket = async (id, e) => {
     if (e) {
@@ -563,14 +554,6 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
           queue={queueTicketOpen}
         />
       )}
-      {acceptTicketWithouSelectQueueOpen && (
-        <AcceptTicketWithouSelectQueue
-          modalOpen={acceptTicketWithouSelectQueueOpen}
-          onClose={(e) => setAcceptTicketWithouSelectQueueOpen(false)}
-          ticketId={ticket.id}
-          ticket={ticket}
-        />
-      )}
       {transferTicketModalOpen && (
         <TransferTicketModalCustom
           modalOpen={transferTicketModalOpen}
@@ -802,36 +785,7 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
           {ticket.status !== "chatbot" && (
             <>
               <span className={classes.secondaryContentSecond}>
-                {ticket.status === "pending" &&
-                  (ticket.queueId === null || ticket.queueId === undefined) && (
-                    <ButtonWithSpinner
-                      style={{
-                        backgroundColor: "transparent",
-                        boxShadow: "none",
-                        border: "none",
-                        color: theme.mode === "light" ? "green" : "#FFF",
-                        padding: "0px",
-                        borderRadius: "50%",
-                        right: "51px",
-                        fontSize: "0.6rem",
-                        bottom: "-30px",
-                        minWidth: "2em",
-                        width: "auto",
-                      }}
-                      variant="contained"
-                      className={classes.acceptButton}
-                      size="small"
-                      loading={loading}
-                      onClick={(e) => handleOpenAcceptTicketWithouSelectQueue()}
-                    >
-                      <Tooltip title={`${i18n.t("ticketsList.buttons.accept")}`}>
-                        <Done />
-                      </Tooltip>
-                    </ButtonWithSpinner>
-                  )}
-              </span>
-              <span className={classes.secondaryContentSecond}>
-                {ticket.status === "pending" && ticket.queueId !== null && (
+                {ticket.status === "pending" && (
                   <ButtonWithSpinner
                     style={{
                       backgroundColor: "transparent",
@@ -850,7 +804,10 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
                     className={classes.acceptButton}
                     size="small"
                     loading={loading}
-                    onClick={(e) => handleAcepptTicket(ticket.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAcepptTicket(ticket.id);
+                    }}
                   >
                     <Tooltip title={`${i18n.t("ticketsList.buttons.accept")}`}>
                       <Done />

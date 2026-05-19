@@ -138,6 +138,33 @@ const CreateMessageService = async ({
     throw new Error("ERR_CREATING_MESSAGE");
   }
 
+  await message.ticket.reload({
+    include: [
+      {
+        model: Contact,
+        attributes: ["id", "name", "number", "email", "profilePicUrl", "acceptAudioMessage", "active", "urlPicture", "companyId"],
+        include: ["extraInfo", "tags"]
+      },
+      {
+        model: Queue,
+        attributes: ["id", "name", "color"]
+      },
+      {
+        model: Whatsapp,
+        attributes: ["id", "name", "groupAsTicket", "color"]
+      },
+      {
+        model: User,
+        attributes: ["id", "name"]
+      },
+      {
+        model: Tag,
+        as: "tags",
+        attributes: ["id", "name", "color"]
+      }
+    ]
+  });
+
   const io = getIO();
 
   if (!messageData?.ticketImported) {
@@ -147,6 +174,13 @@ const CreateMessageService = async ({
         message,
         ticket: message.ticket,
         contact: message.ticket.contact
+      });
+
+    io.of(String(companyId))
+      .emit(`company-${companyId}-ticket`, {
+        action: "update",
+        ticket: message.ticket,
+        ticketId: message.ticket.id
       });
   }
 

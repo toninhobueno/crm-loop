@@ -11,6 +11,14 @@ import Whatsapp from "../../models/Whatsapp";
 import * as Sentry from "@sentry/node";
 import { ENABLE_LID_DEBUG } from "../../config/debug";
 import { normalizeJid } from "../../utils";
+import {
+  isInvalidContactName,
+  isLikelyLidNumber,
+  isLikelyPhoneNumber,
+  resolveContactDisplayName,
+  resolveWhatsappPhone
+} from "../../helpers/resolveWhatsappPhone";
+import AppError from "../../errors/AppError";
 const axios = require("axios");
 
 interface ExtraInfo extends ContactCustomField {
@@ -49,6 +57,7 @@ interface ContactData {
   disableBot?: boolean;
   language?: string;
   lid?: string;
+  remoteJid?: string;
 }
 
 export const updateContact = async (
@@ -100,9 +109,43 @@ const CreateOrUpdateContactService = async ({
       logger.info(`[RDS-LID] Número com formato incorreto corrigido: ${number} -> ${cleanNumber}`);
     }
 
+    let resolvedRemoteJid = remoteJid;
+    let resolvedLid = lid;
+    const displayName = resolveContactDisplayName(
+      name,
+      cleanNumber,
+      resolvedLid
+    );
+
+    if (!isGroup && (isLikelyLidNumber(cleanNumber) || !isLikelyPhoneNumber(cleanNumber))) {
+      if (wbot) {
+        const resolved = await resolveWhatsappPhone(wbot, {
+          jid: remoteJid,
+          lid: resolvedLid,
+          number: cleanNumber
+        });
+        if (resolved) {
+          cleanNumber = resolved.number;
+          resolvedRemoteJid = resolved.remoteJid;
+          resolvedLid = resolved.lid || resolvedLid;
+          logger.info(
+            `[RDS-LID] Contato corrigido na criação: number=${cleanNumber}`
+          );
+        }
+      }
+
+      if (!isLikelyPhoneNumber(cleanNumber)) {
+        throw new AppError(
+          "ERR_INVALID_CONTACT_NUMBER",
+          400
+        );
+      }
+    }
+
     // Monta um remoteJid padrão quando não for informado
     const fallbackRemoteJid = normalizeJid(
-      remoteJid || (isGroup ? `${cleanNumber}@g.us` : `${cleanNumber}@s.whatsapp.net`)
+      resolvedRemoteJid ||
+        (isGroup ? `${cleanNumber}@g.us` : `${cleanNumber}@s.whatsapp.net`)
     );
 
     let createContact = false;
@@ -116,8 +159,8 @@ const CreateOrUpdateContactService = async ({
         `[RDS-LID] Buscando contato: number=${cleanNumber}, companyId=${companyId}, lid=${lid}`
       );
     }
-    if (lid) {
-      contact = await Contact.findOne({ where: { lid, companyId } });
+    if (resolvedLid) {
+      contact = await Contact.findOne({ where: { lid: resolvedLid, companyId } });
     }
     if (!contact) {
       contact = await Contact.findOne({ where: { number: cleanNumber, companyId } });
@@ -236,8 +279,18 @@ const CreateOrUpdateContactService = async ({
         updateImage = true;
       }
 
-      if (contact.name === number) {
-        contact.name = name;
+      if (
+        isInvalidContactName(contact.name, cleanNumber) ||
+        contact.name === cleanNumber ||
+        contact.name === number
+      ) {
+        contact.name = displayName;
+      } else if (
+        name &&
+        !isInvalidContactName(name, cleanNumber) &&
+        name.trim() !== contact.name
+      ) {
+        contact.name = displayName;
       }
 
       await contact.save(); // Ensure save() is called to trigger updatedAt
@@ -291,7 +344,7 @@ const CreateOrUpdateContactService = async ({
 
       try {
         // Verificar se conseguimos obter o LID via API do WhatsApp
-        let lidToUse = lid || null;
+        let lidToUse = resolvedLid || null;
 
         // Se não temos LID mas temos wbot, tenta consultar o LID via API
         if (!lidToUse && wbot && newRemoteJid) {
@@ -314,7 +367,7 @@ const CreateOrUpdateContactService = async ({
 
         // Criando contato com LID quando disponível
         contact = await Contact.create({
-          name,
+          name: displayName,
           number: cleanNumber, // Usar o número limpo aqui
           email,
           birthDate: processedBirthDate, // 🎂 INCLUIR NO CREATE
@@ -392,7 +445,7 @@ const CreateOrUpdateContactService = async ({
 
       try {
         contact = await Contact.create({
-          name,
+          name: displayName,
           number: cleanNumber, // Usar o número limpo aqui
           email,
           birthDate: processedBirthDate, // 🎂 INCLUIR NO CREATE
