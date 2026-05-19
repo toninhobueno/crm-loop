@@ -75,6 +75,7 @@ const ListTicketsService = async ({
 }: Request): Promise<Response> => {
   const user = await ShowUserService(userId, companyId);
   const effectiveWhatsappIds = resolveWhatsappIdsForUser(user, whatsappIds);
+  const userQueueIds = user.queues.map(queue => queue.id);
 
   const showTicketAllQueues = user.allHistoric === "enabled";
   const showTicketWithoutQueue = user.allTicket === "enable";

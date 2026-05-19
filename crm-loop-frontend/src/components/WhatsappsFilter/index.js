@@ -14,20 +14,25 @@ export function WhatsappsFilter({ onFiltered, initialWhatsapps }) {
     user?.profile !== "admin" && Boolean(user?.whatsappId);
 
   useEffect(() => {
-    async function fetchData() {
-      await loadWhatsapps();
-    }
-    fetchData();
-  }, []);
+    loadWhatsapps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.whatsappId, user?.profile]);
 
   useEffect(() => {
-    setSelecteds([]);
     if (
-      Array.isArray(initialWhatsapps) &&
-      Array.isArray(whatsapps) &&
-      whatsapps.length > 0
+      !Array.isArray(initialWhatsapps) ||
+      !Array.isArray(whatsapps) ||
+      whatsapps.length === 0
     ) {
-      onChange(initialWhatsapps);
+      return;
+    }
+
+    const matched = initialWhatsapps
+      .map(item => whatsapps.find(w => w.id === item?.id))
+      .filter(Boolean);
+
+    if (matched.length > 0) {
+      onChange(matched);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialWhatsapps, whatsapps]);
@@ -58,18 +63,21 @@ export function WhatsappsFilter({ onFiltered, initialWhatsapps }) {
   return (
     <Box style={{ padding: "0px 10px 10px" }}>
       <Autocomplete
-        multiple={!isRestrictedUser}
+        multiple
         size="small"
         options={whatsapps}
         value={selecteds}
         disabled={isRestrictedUser && whatsapps.length <= 1}
         onChange={(e, v, r) => onChange(v)}
-        getOptionLabel={(option) => option.name}
+        getOptionLabel={(option) => option?.name || ""}
         getOptionSelected={(option, value) => {
-          return (
-            option?.id === value?.id ||
-            option?.name.toLowerCase() === value?.name.toLowerCase()
-          );
+          if (!option || !value) return false;
+          if (option.id != null && value.id != null) {
+            return option.id === value.id;
+          }
+          const optionName = (option.name || "").toLowerCase();
+          const valueName = (value.name || "").toLowerCase();
+          return optionName !== "" && optionName === valueName;
         }}
         renderTags={(value, getWhatsappProps) =>
           value.map((option, index) => (
